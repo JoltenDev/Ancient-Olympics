@@ -1,20 +1,21 @@
 using UnityEngine;
 
-public class Singleton : MonoBehaviour
+public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-    private static Singleton _instance;
+    public static Singleton<T> Instance { get; private set; }
 
-    public static Singleton Instance { get { return _instance; } }
-
-    private void Awake()
+    protected virtual void Awake()
     {
-        if (_instance != null && _instance != this)
+        Debug.Log($"Awake called on {typeof(T)}: {gameObject.name}");
+
+        if (Instance != null && Instance != this)
         {
-            Destroy(this.gameObject);
+            Debug.LogWarning($"Destroying duplicate instance of {typeof(T)} on {gameObject.name}");
+            Destroy(gameObject);
+            return;
         }
-        else
-        {
-            _instance = this;
-        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 }

@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : Singleton
+public class GameManager : Singleton<MonoBehaviour>
 {
     public void ApplicationQuit() => Application.Quit();
 

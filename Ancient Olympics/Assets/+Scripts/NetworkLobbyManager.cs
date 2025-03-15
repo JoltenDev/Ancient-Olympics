@@ -6,7 +6,7 @@ using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NetworkLobbyManager : Singleton
+public class NetworkLobbyManager : Singleton<MonoBehaviour>
 {
     [Header("Texts")]
     [SerializeField] TMP_Text t_Identifier;
@@ -22,8 +22,20 @@ public class NetworkLobbyManager : Singleton
     void Start()
     {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        hostButton.onClick.AddListener(() => NetworkManager.Singleton.StartHost());
-        connectButton.onClick.AddListener(() => NetworkManager.Singleton.StartClient());
+
+        hostButton.onClick.AddListener(delegate
+        {
+            SetHostIP();
+            NetworkManager.Singleton.StartHost();
+        });
+
+        connectButton.onClick.AddListener(delegate 
+        {
+            SetTransportIP();
+            NetworkManager.Singleton.StartClient();
+        });
+
+        Debug.Log("Creating instance of Network Lobby");
     }
 
     void SetHostIP()
