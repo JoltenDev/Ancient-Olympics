@@ -30,6 +30,9 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         });
     }
 
+    /// <summary>
+    /// Sets host's connection IP and Port to their local IP, auto generates Port
+    /// </summary>
     void SetHostIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -42,6 +45,9 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         }
     }
 
+    /// <summary>
+    /// Retrieves entered IP and Port from client
+    /// </summary>
     void SetTransportIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -68,6 +74,10 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         }
     }
 
+    /// <summary>
+    /// Retrieves local IP Address of host
+    /// </summary>
+    /// <returns> "127.0.0.1" if not found </returns>
     string GetLocalIPAddress()
     {
         foreach (var netInterface in Dns.GetHostEntry(Dns.GetHostName()).AddressList)

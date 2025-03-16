@@ -1,6 +1,4 @@
 using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -24,12 +22,19 @@ public class GameManager : Singleton<GameManager>
         ChangeState(GameState.Lobby);
     }
 
-    void Update()
+    /// <summary>
+    /// Controls the state of the game
+    /// </summary>
+    /// <param name="newState"> State to be swapped into </param>
+    void ChangeState(GameState newState)
     {
+        ActionEvent.onStateChanged?.Invoke();
+        State = newState;
+
         switch (State)
         {
             case GameState.Lobby:
-                CurrentScene = "Scene_Lobby";
+                LobbyState();
                 break;
             case GameState.Started:
                 break;
@@ -44,9 +49,34 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    void ChangeState(GameState newState)
+    void LobbyState()
     {
-        State = newState;
+        CurrentScene = "Scene_Lobby";
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        ChangeScene();
+    }
+
+    /// <summary>
+    /// Handles the scene management
+    /// </summary>
+    /// <returns> true if the scene successfully loaded, false otherwise </returns>
+    bool ChangeScene()
+    {
+        if (IsServer && !string.IsNullOrEmpty(CurrentScene))
+        {
+            var status = NetworkManager.SceneManager.LoadScene(CurrentScene, LoadSceneMode.Single);
+
+            if (status != SceneEventProgressStatus.Started)
+            {
+                Debug.LogWarning($"Failed to load {CurrentScene} " + $"with a {nameof(SceneEventProgressStatus)}: {status}");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void ApplicationQuit() => Application.Quit();
