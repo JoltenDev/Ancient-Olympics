@@ -40,8 +40,8 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         {
             string hostIP = GetLocalIPAddress();
 
-            transport.ConnectionData.Address = hostIP;
-            transport.ConnectionData.Port = (ushort)Random.Range(7777, 7999);
+            //transport.ConnectionData.Address = hostIP;
+            //transport.ConnectionData.Port = (ushort)Random.Range(7777, 7999);
         }
     }
 
@@ -51,7 +51,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
     void SetTransportIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        if (transport != null)
+        if (transport != null && if_IPAddress.text != "")
         {
             string[] addressParts = if_IPAddress.text.Split(':');
             string ip = addressParts[0];

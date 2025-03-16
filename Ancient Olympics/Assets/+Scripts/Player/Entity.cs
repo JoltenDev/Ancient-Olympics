@@ -1,23 +1,28 @@
 using UnityEngine;
 using Unity.Netcode;
+using UnityEngine.InputSystem;
+using TMPro;
 
 public class Entity : NetworkBehaviour
 {
-    [SerializeField] float speed;
-
+    [SerializeField] float speed = 1f;
     Rigidbody rigidBody;
+    Animator animator;
     Controls controls;
 
     Vector2 moveInput;
-    Vector3 direction;
 
     void Awake()
     {
+        rigidBody = GetComponent<Rigidbody>();
+        animator = GetComponentInChildren<Animator>();
+    }
+
+    public override void OnNetworkSpawn()
+    {
         if (!IsOwner) return;
 
-        rigidBody = GetComponent<Rigidbody>();
         controls = new Controls();
-
         controls.Player.Move.performed += ctx =>
         {
             moveInput = ctx.ReadValue<Vector2>();
@@ -27,39 +32,61 @@ public class Entity : NetworkBehaviour
         {
             moveInput = Vector2.zero;
         };
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        if (!IsOwner) return;
 
         controls.Enable();
-    }
-    public override void OnNetworkDespawn() 
-    {
-        if (!IsOwner) return;
-
-        controls.Disable();
     }
 
     void Update()
     {
         if (!IsOwner) return;
 
-        direction = new Vector3(moveInput.x, rigidBody.linearVelocity.y, moveInput.y);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+        {
+            Vector3 targetPosition = hit.point;
+            RotateRpc(targetPosition);
+        }
+
+        AnimateRpc();
     }
 
     void FixedUpdate()
     {
         if (!IsOwner) return;
 
-        rigidBody.linearVelocity = direction * speed;
-        MoveServerRpc(transform.position);
+        MoveRpc();
     }
 
-    [ServerRpc]
-    void MoveServerRpc(Vector3 newPosition)
+    [Rpc(SendTo.Server)]
+    void MoveRpc()
     {
-        transform.position = newPosition;
+        Vector3 moveDir = new Vector3(moveInput.x, 0, moveInput.y);
+        rigidBody.position += moveDir * speed * Time.fixedDeltaTime;
+    }
+
+    [Rpc(SendTo.Server)]
+    void RotateRpc(Vector3 target)
+    {
+        Vector3 direction = (target - transform.position).normalized;
+        direction.y = 0;
+
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            rigidBody.MoveRotation(Quaternion.Slerp(rigidBody.rotation, targetRotation, 0.1f));
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    void AnimateRpc()
+    {
+        if (moveInput != Vector2.zero)
+        {
+            animator.SetBool("IsMoving", true);
+        }
+        else
+        {
+            animator.SetBool("IsMoving", false);
+        }
     }
 }
