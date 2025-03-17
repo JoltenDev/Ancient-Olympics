@@ -15,7 +15,9 @@ GameObject:
   - component: {fileID: -5545963539965187870}
   - component: {fileID: 298281419214203462}
   - component: {fileID: 5696756273854141335}
-  - component: {fileID: -3778180349961748376}
+  - component: {fileID: 1160934366969071610}
+  - component: {fileID: 6098581574065130360}
+  - component: {fileID: -6198044839933822205}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -180,7 +182,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   TransitionStateInfoList: []
   m_Animator: {fileID: 2579228891137005193}
---- !u!114 &-3778180349961748376
+--- !u!114 &1160934366969071610
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -189,11 +191,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 3570647152602462692}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 805c33ef654cc2e41941d27910eadd2f, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f29f4a0b42ec954caabf83428a73bc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  animator: {fileID: 2579228891137005193}
+--- !u!114 &6098581574065130360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3570647152602462692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c8074c0983f47342a67b98a4b3c9bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  rigidBody: {fileID: 8952246235399646411}
+  networkAnimatorSync: {fileID: 1160934366969071610}
   speed: 15
+  cooldownHandler: {fileID: -6198044839933822205}
+--- !u!114 &-6198044839933822205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3570647152602462692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 758ad71727e224c449b3226c221a399a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1001 &7094629223538680952
 PrefabInstance:
   m_ObjectHideFlags: 0
