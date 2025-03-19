@@ -19,7 +19,6 @@ GameObject:
   - component: {fileID: 6098581574065130360}
   - component: {fileID: -6198044839933822205}
   - component: {fileID: -1386306046626246304}
-  - component: {fileID: -5831436245080253368}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -214,10 +213,8 @@ MonoBehaviour:
   rigidBody: {fileID: 8952246235399646411}
   speed: 15
   defaultPlayerHud: {fileID: 3190950426589149833, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
-  cooldownHandler: {fileID: -6198044839933822205}
   dodgeStrength: 10
-  attackDuration: 0.5
-  state: 0
+  cooldownHandler: {fileID: -6198044839933822205}
 --- !u!114 &-6198044839933822205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,23 +244,6 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth:
     m_InternalValue: 100
---- !u!114 &-5831436245080253368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3570647152602462692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5fa1600812a4334a97414ef68d2fce7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  state: 0
-  nextState: 1
-  attackCooldown: 1
-  animationTransition: 0.15
 --- !u!1001 &885934693612048634
 PrefabInstance:
   m_ObjectHideFlags: 0

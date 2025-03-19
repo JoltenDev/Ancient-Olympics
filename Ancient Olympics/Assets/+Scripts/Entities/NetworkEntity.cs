@@ -13,7 +13,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// Only the owning client can call this.
     /// </summary>
     /// <param name="destination">The target movement position.</param>
-    protected void SendMove(Vector3 destination)
+    public void SendMove(Vector3 destination)
     {
         if (IsOwner)
             SendRpc(nameof(SyncPositionRpc), destination);
@@ -24,7 +24,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// Only the owning client can call this.
     /// </summary>
     /// <param name="direction">The target look direction.</param>
-    protected void SendRotation(Vector3 direction)
+    public void SendRotation(Vector3 direction)
     {
         if (IsOwner)
             SendRpc(nameof(SyncRotationRpc), direction);
@@ -60,7 +60,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// </summary>
     /// <param name="syncedPos">The updated position received from the server.</param>
     [Rpc(SendTo.NotServer)]
-    protected void SyncPositionRpc(Vector3 syncedPos)
+    public void SyncPositionRpc(Vector3 syncedPos)
     {
         if (!IsOwner)
             rigidBody.position = Vector3.Lerp(rigidBody.position, syncedPos, 0.1f);
@@ -71,7 +71,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// </summary>
     /// <param name="syncedRotation">The updated rotation received from the server.</param>
     [Rpc(SendTo.NotServer)]
-    protected void SyncRotationRpc(Quaternion syncedRotation)
+    public void SyncRotationRpc(Quaternion syncedRotation)
     {
         if (!IsOwner)
             rigidBody.rotation = Quaternion.Lerp(rigidBody.rotation, syncedRotation, 0.1f);

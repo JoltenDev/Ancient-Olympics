@@ -1,152 +1,57 @@
 using UnityEngine;
 using Unity.Netcode;
-using UnityEngine.InputSystem;
 using TMPro;
 
 public class Player : NetworkEntity
 {
     [Header("Player Fields")]
     [SerializeField] GameObject defaultPlayerHud;
-    [SerializeField] PlayerCooldownHandler cooldownHandler;
     [SerializeField] float dodgeStrength = 5f;
-    [SerializeField] float attackDuration = 0.5f;
-
-    enum PlayerStates { Idle, Move, Dodge, Attack, Frozen }
-    [SerializeField] PlayerStates state = PlayerStates.Idle;
-
     GameObject localHud = null;
-    Controls controls;
+
+    PlayerStates states;
+
+    [Header("Base State")]
+    PlayerBaseState currentState;
+    public PlayerBaseState CurrentState { get { return currentState; } set { currentState = value; } }
+
+    [Header("Input Handler")]
+    PlayerInputHandler inputHandler = new PlayerInputHandler();
+    public PlayerInputHandler InputHandler { get { return inputHandler; } }
+
+    [Header("Cooldown Handler")]
+    [SerializeField] PlayerCooldownHandler cooldownHandler;
+    public PlayerCooldownHandler CooldownHandler { get { return cooldownHandler; } }
 
     Vector2 moveInput;
-    Vector3 moveDir;
-
-    bool canDodge = true;
-
-    System.Action dodgeStartedAction;
-    System.Action dodgeCompletedAction;
-    System.Action frozenStartedAction;
-    System.Action frozenCompletedAction;
-    System.Action<float> frozenStateChangeAction;
-    System.Action<float> healthChangedAction;
-    System.Action<InputAction.CallbackContext> leftClickAction;
-    System.Action<float> startAttackCooldownAction;
-    System.Action attackCooldownCompleted;
-
-    bool canAttack = true;
+    public Vector2 MoveInput { get { return moveInput; } set { moveInput = value; } }
 
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) return;
 
-        InitilizeControls();
-        SubscribeActions();
-        
-        localHud = Instantiate(defaultPlayerHud, new Vector3(0, 2, 0), Quaternion.identity);
+        inputHandler.Initialize();
+
+        states = new PlayerStates(this);
+        currentState = states.Idle();
+        currentState.Enter();
+
+        inputHandler.onMoveInput += SetMoveInput;
     }
 
     public override void OnDestroy()
     {
         if (!IsOwner) return;
 
-        Debug.Log($"{gameObject.name} was destroyed!", this);
-
-        controls.Player.OnSpace.performed -= Dodge;
-        controls.Player.OnLeftClick.performed -= leftClickAction;
-        UnsubscribeActions();
-    }
-
-    void InitilizeControls()
-    {
-        controls = new Controls();
-
-        controls.Player.Move.performed += ctx =>
-        {
-            moveInput = ctx.ReadValue<Vector2>();
-        };
-
-        controls.Player.Move.canceled += ctx =>
-        {
-            moveInput = Vector2.zero;
-        };
-
-        controls.Player.OnSpace.performed += Dodge;
-
-        leftClickAction = ctx => { if (canAttack) ChangeState(PlayerStates.Attack); };
-        controls.Player.OnLeftClick.performed += leftClickAction;
-
-        controls.Enable();
-    }
-    void SubscribeActions()
-    {
-        dodgeStartedAction = () => ChangeState(PlayerStates.Dodge);
-        dodgeCompletedAction = () => canDodge = true;
-        frozenStartedAction = () => ActionEvent.onFrozenStarted?.Invoke(.75f);
-        frozenStateChangeAction = (float time) => ChangeState(PlayerStates.Frozen);
-        frozenCompletedAction = () => ChangeState(PlayerStates.Idle);
-        healthChangedAction = UpdateHud;
-
-        // Dodge Actions
-        ActionEvent.onDodgeStarted += dodgeStartedAction;
-        ActionEvent.onDodgeCompleted += dodgeCompletedAction;
-        ActionEvent.onDodgeStarted += frozenStartedAction;
-
-        // Frozen Actions
-        ActionEvent.onFrozenStarted += frozenStateChangeAction;
-        ActionEvent.onFrozenCompleted += frozenCompletedAction;
-
-        // Health Actions
-        ActionEvent.onHealthChanged += healthChangedAction;
-
-        // Attack Actions
-        startAttackCooldownAction = (float amount) => { canAttack = false; };
-        ActionEvent.onStartAttackCooldown += startAttackCooldownAction;
-
-        attackCooldownCompleted = () => { canAttack = true; };
-        ActionEvent.onAttackCooldownCompleted += attackCooldownCompleted;
-    }
-    void UnsubscribeActions()
-    {
-        ActionEvent.onDodgeStarted -= dodgeStartedAction;
-        ActionEvent.onDodgeCompleted -= dodgeCompletedAction;
-        ActionEvent.onDodgeStarted -= frozenStartedAction;
-
-        ActionEvent.onFrozenStarted -= frozenStateChangeAction;
-        ActionEvent.onFrozenCompleted -= frozenCompletedAction;
-
-        ActionEvent.onHealthChanged -= healthChangedAction;
+        inputHandler.onMoveInput -= SetMoveInput;
+        inputHandler.Dispose();
     }
 
     void Update()
     {
         if (!IsOwner) return;
 
-        switch (state)
-        {
-            case PlayerStates.Frozen:
-                moveDir = Vector3.zero;
-                ActionEvent.onAnimatorMove?.Invoke("IsMoving", false); // Invokes movement animations
-                return;
-            
-            case PlayerStates.Idle:
-                if (moveInput != Vector2.zero) ChangeState(PlayerStates.Move);
-                break;
-
-            case PlayerStates.Move:
-                moveDir = new Vector3(moveInput.x, 0, moveInput.y);
-                ActionEvent.onAnimatorMove?.Invoke("IsMoving", moveInput != Vector2.zero); // Invokes movement animations
-
-                if (moveInput == Vector2.zero) ChangeState(PlayerStates.Idle);
-                break;
-
-            case PlayerStates.Dodge:
-                // Dodge logic
-                break;
-
-            case PlayerStates.Attack:
-                // Attack logic
-                ActionEvent.onFrozenStarted?.Invoke(attackDuration);
-                break;
-        }
+        currentState.Update();
 
         Rotate();
     }
@@ -155,21 +60,10 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
-        // (From local client [messenger]) Send movement direction to server
-        SendMove(moveDir);
+        currentState.FixedUpdate();
     }
 
-    /// <summary>
-    /// Changes the current state of the player
-    /// </summary>
-    /// <param name="newState"> The new state given to the player </param>
-    void ChangeState(PlayerStates newState)
-    {
-        if (state == PlayerStates.Frozen && newState != PlayerStates.Idle)
-            return;
-
-        state = newState;
-    }
+    void SetMoveInput(Vector2 input) => moveInput = input;
 
     /// <summary>
     /// Rotates player towards the mouse position in world space
@@ -189,22 +83,8 @@ public class Player : NetworkEntity
         }
     }
 
-    void Dodge(InputAction.CallbackContext ctx)
-    {
-        if (!IsOwner) return;
-
-        if (ctx.control.IsPressed() && moveInput != Vector2.zero && canDodge)
-        {
-            ActionEvent.onDodgeStarted?.Invoke(); // Start cooldown
-            ActionEvent.onAnimatorDodge?.Invoke("dodge", .25f); // Invokes animation
-
-            SendDodgeRpc(moveInput);
-            canDodge = false;
-        }
-    }
-
     [Rpc(SendTo.Server)]
-    void SendDodgeRpc(Vector3 direction)
+    public void SendDodgeRpc(Vector3 direction)
     {
         Vector3 camForward = Camera.main.transform.forward;
         Vector3 camRight = Camera.main.transform.right;
