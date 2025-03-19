@@ -8,6 +8,7 @@ public class Player : NetworkEntity
     [SerializeField] GameObject defaultPlayerHud;
     [SerializeField] float dodgeStrength = 5f;
     GameObject localHud = null;
+    [SerializeField] GameObject hitbox;
 
     PlayerStates states;
 
@@ -36,6 +37,7 @@ public class Player : NetworkEntity
         currentState = states.Idle();
         currentState.Enter();
 
+        ActionEvent.onAttack += ActivateHitbox;
         inputHandler.onMoveInput += SetMoveInput;
     }
 
@@ -43,6 +45,7 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
+        ActionEvent.onAttack -= ActivateHitbox;
         inputHandler.onMoveInput -= SetMoveInput;
         inputHandler.Dispose();
     }
@@ -64,6 +67,8 @@ public class Player : NetworkEntity
     }
 
     void SetMoveInput(Vector2 input) => moveInput = input;
+
+    void ActivateHitbox() => hitbox.SetActive(true);
 
     /// <summary>
     /// Rotates player towards the mouse position in world space

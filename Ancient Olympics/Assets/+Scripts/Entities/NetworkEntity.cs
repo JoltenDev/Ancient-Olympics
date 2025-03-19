@@ -74,6 +74,6 @@ public abstract class NetworkEntity : NetworkBehaviour
     public void SyncRotationRpc(Quaternion syncedRotation)
     {
         if (!IsOwner)
-            rigidBody.rotation = Quaternion.Lerp(rigidBody.rotation, syncedRotation, 0.1f);
+            rigidBody.rotation = Quaternion.Slerp(rigidBody.rotation, syncedRotation, 5f * Time.deltaTime);
     }
 }

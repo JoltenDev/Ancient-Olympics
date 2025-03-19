@@ -10,6 +10,8 @@ public class PlayerMelee1State : PlayerBaseState
 
     public override void Enter()
     {
+        ActionEvent.onAttack?.Invoke();
+
         ActionEvent.onAnimatorMelee?.Invoke("melee1", 0.25f);
         player.CooldownHandler.StartCooldown("Attack Duration", 0.75f);
         player.CooldownHandler.StartCooldown("Combo Window", 0.5f);

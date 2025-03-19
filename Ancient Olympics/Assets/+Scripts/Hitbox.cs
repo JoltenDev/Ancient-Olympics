@@ -3,11 +3,14 @@ using UnityEngine;
 
 public class Hitbox : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (!NetworkManager.Singleton.IsServer) return;
 
-        if (other.CompareTag("Player"))
+        if (other.gameObject != this && other.CompareTag("Player"))
+        {
             Debug.Log("Hit");
+            gameObject.SetActive(false);
+        }    
     }
 }

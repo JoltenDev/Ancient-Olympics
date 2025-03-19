@@ -7,6 +7,7 @@ public static class ActionEvent
     public static Action onStateChanged;
 
     public static Action<float> onHealthChanged;
+    public static Action onAttack;
     public static Action<float> onDamage;
     public static Action<float> onHeal;
 

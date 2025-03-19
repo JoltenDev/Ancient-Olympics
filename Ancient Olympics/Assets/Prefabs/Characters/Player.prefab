@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: -1386306046626246304}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -214,6 +214,7 @@ MonoBehaviour:
   speed: 15
   defaultPlayerHud: {fileID: 3190950426589149833, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
   dodgeStrength: 10
+  hitbox: {fileID: 8096241349572696425}
   cooldownHandler: {fileID: -6198044839933822205}
 --- !u!114 &-6198044839933822205
 MonoBehaviour:
@@ -304,6 +305,11 @@ PrefabInstance:
 --- !u!4 &1333818225833403869 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2218537890354115879, guid: 18c21ec7f85dc0746a78a811baa60e6e, type: 3}
+  m_PrefabInstance: {fileID: 885934693612048634}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8096241349572696425 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8939883254868920723, guid: 18c21ec7f85dc0746a78a811baa60e6e, type: 3}
   m_PrefabInstance: {fileID: 885934693612048634}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7094629223538680952
