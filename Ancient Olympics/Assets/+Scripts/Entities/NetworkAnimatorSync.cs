@@ -5,15 +5,39 @@ public class NetworkAnimatorSync : NetworkBehaviour
 {
     [SerializeField] Animator animator;
 
-    public void SyncAnimation(Vector2 moveInput)
+    public override void OnNetworkSpawn()
     {
-        if (IsOwner)
-            AnimateMoveRpc(moveInput);
+        if (!IsOwner) return;
+
+        ActionEvent.onAnimatorMove += AnimateSetBoolRpc;
+        ActionEvent.onAnimatorDodge += AnimateCrossFadeRpc;
+        ActionEvent.onAnimatorMelee += AnimateCrossFadeRpc;
+    }
+
+    public override void OnDestroy()
+    {
+        if (!IsOwner) return;
+
+        ActionEvent.onAnimatorMove -= AnimateSetBoolRpc;
+        ActionEvent.onAnimatorDodge -= AnimateCrossFadeRpc;
+        ActionEvent.onAnimatorMelee -= AnimateCrossFadeRpc;
     }
 
     [Rpc(SendTo.Everyone)]
-    private void AnimateMoveRpc(Vector2 moveInput)
+    void AnimateSetBoolRpc(string name, bool condition)
     {
-        animator.SetBool("IsMoving", moveInput != Vector2.zero);
+        animator.SetBool(name, condition);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void AnimateCrossFadeRpc(string name, float transition)
+    {
+        animator.CrossFade(name, transition);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void AnimatePlayRpc(string name)
+    {
+        animator.Play(name);
     }
 }

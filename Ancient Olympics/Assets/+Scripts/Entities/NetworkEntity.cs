@@ -4,14 +4,9 @@ using Unity.Netcode;
 [RequireComponent(typeof(Rigidbody), typeof(NetworkAnimatorSync))]
 public abstract class NetworkEntity : NetworkBehaviour
 {
+    [Header("Entity Fields")]
     [SerializeField] protected Rigidbody rigidBody;
-    [SerializeField] protected NetworkAnimatorSync networkAnimatorSync;
     [SerializeField] protected float speed = 15f;
-
-    public override void OnNetworkSpawn()
-    {
-        if (!IsOwner) return;
-    }
 
     /// <summary>
     /// Sends movement input from the client to the server for synchronization.

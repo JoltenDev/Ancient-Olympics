@@ -8,12 +8,19 @@ public class PlayerCooldownHandler : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        if (!IsOwner) return;
+
         ActionEvent.onDodgeStarted += StartDodgeCooldown;
+        ActionEvent.onFrozenStarted += StartFrozenCooldown;
+        ActionEvent.onStartAttackCooldown += StartAttackCooldown;
     }
 
     public override void OnDestroy()
     {
+        if (!IsOwner) return;
+
         ActionEvent.onDodgeStarted -= StartDodgeCooldown;
+        ActionEvent.onStartAttackCooldown -= StartFrozenCooldown;
     }
 
     /// <summary>
@@ -31,5 +38,17 @@ public class PlayerCooldownHandler : NetworkBehaviour
     {
         await Cooldown(dodgeCooldown); // Wait until cooldown completes
         ActionEvent.onDodgeCompleted?.Invoke();
+    }
+
+    async void StartFrozenCooldown(float seconds)
+    {
+        await Cooldown(seconds);
+        ActionEvent.onFrozenCompleted?.Invoke();
+    }
+
+    async void StartAttackCooldown(float seconds)
+    {
+        await Cooldown(seconds);
+        ActionEvent.onAttackCooldownCompleted?.Invoke();
     }
 }
