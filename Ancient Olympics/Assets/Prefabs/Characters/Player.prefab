@@ -138,9 +138,9 @@ MonoBehaviour:
   SyncRotAngleX: 1
   SyncRotAngleY: 1
   SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
@@ -215,6 +215,8 @@ MonoBehaviour:
   defaultPlayerHud: {fileID: 3190950426589149833, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
   dodgeStrength: 10
   hitbox: {fileID: 8096241349572696425}
+  defaultTexture: {fileID: 2800000, guid: 9bcf4a78d335d154d870416b7ef06c5d, type: 3}
+  deathTexture: {fileID: 2800000, guid: 8bbef9c963c03d3429c3cf716178fb9b, type: 3}
   cooldownHandler: {fileID: -6198044839933822205}
   networkHealth: {fileID: -1386306046626246304}
 --- !u!114 &-6198044839933822205

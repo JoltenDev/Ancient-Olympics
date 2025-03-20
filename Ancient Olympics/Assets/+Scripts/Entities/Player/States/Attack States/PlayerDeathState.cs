@@ -13,6 +13,8 @@ public class PlayerDeathState : PlayerBaseState
 
         player.InputHandler.BlockInput();
         player.DisablePlayerRpc();
+
+        Cursor.SetCursor(player.DeathTexture, Vector2.zero, CursorMode.Auto);
     }
 
     public override void Update()
@@ -27,7 +29,7 @@ public class PlayerDeathState : PlayerBaseState
 
     public override void Exit()
     {
-
+        Cursor.SetCursor(player.DefaultTexture, Vector2.zero, CursorMode.Auto);
     }
 
     void SwitchState()

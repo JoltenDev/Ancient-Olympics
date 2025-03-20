@@ -4,6 +4,7 @@ using UnityEngine;
 public static class ActionEvent
 {
     // Game Actions
+    public static Action onGameStarted;
     public static Action onStateChanged;
 
     // Player Actions

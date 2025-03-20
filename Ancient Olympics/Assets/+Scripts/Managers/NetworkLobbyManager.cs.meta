@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: b199e0c68f7411f45a108f1c31373390
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - lobbyMenu: {fileID: 7179587342603619510, guid: 8ecbf018d552c1f45b703afb5063a377, type: 3}
+  - hostButton: {instanceID: 0}
+  - connectButton: {instanceID: 0}
+  - if_IPAddress: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

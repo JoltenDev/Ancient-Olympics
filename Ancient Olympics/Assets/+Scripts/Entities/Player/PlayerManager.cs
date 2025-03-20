@@ -3,10 +3,33 @@ using Unity.Netcode;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerManager : Singleton<PlayerManager>
 {
+    [SerializeField] TMP_InputField if_Name;
+    [SerializeField] Button nameButton;
+    public static string username;
+
     [SerializeField] GameObject defaultPlayerPrefab;
+    [SerializeField] Texture2D defaultTexture;
+    [SerializeField] GameObject lobbyMenu;
+
+    [SerializeField] List<GameObject> playersInServer = new List<GameObject>();
+
+    void Start()
+    {
+        nameButton.onClick.AddListener(delegate
+        {
+            if (if_Name.text != "")
+            {
+                username = if_Name.text;
+                if_Name.transform.parent.gameObject.SetActive(false);
+            }
+        });
+
+        Cursor.SetCursor(defaultTexture, Vector2.zero, CursorMode.Auto);
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -26,6 +49,9 @@ public class PlayerManager : Singleton<PlayerManager>
 
         GameObject player = Instantiate(defaultPlayerPrefab, new Vector3(0, 2, 0), Quaternion.identity);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
+        
+        if (IsServer)
+            playersInServer.Add(player);
     }
 
     /// <summary>
@@ -39,10 +65,15 @@ public class PlayerManager : Singleton<PlayerManager>
     {
         if (IsServer)
         {
+            playersInServer?.Clear();
+
             foreach (ulong id in clientsSuccessful) 
             {
                 GameObject player = Instantiate(defaultPlayerPrefab, new Vector3(0, 2, 0), Quaternion.identity);
                 player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id, true);
+
+                playersInServer.Add(player);
+                Instantiate(lobbyMenu);
             }
         }
     }

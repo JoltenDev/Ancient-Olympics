@@ -1,14 +1,25 @@
 using UnityEngine;
 using Unity.Netcode;
 using TMPro;
+using UnityEngine.Rendering;
 
 public class Player : NetworkEntity
 {
+    [Header("Username")]
+    [SerializeField] string username;
+    public string Username { get { return username; } set { username = value; } }
+
     [Header("Player Fields")]
     [SerializeField] GameObject defaultPlayerHud;
     [SerializeField] float dodgeStrength = 5f;
     GameObject localHud = null;
     [SerializeField] GameObject hitbox;
+
+    [Header("Cursor Textures")]
+    [SerializeField] Texture2D defaultTexture;
+    public Texture2D DefaultTexture { get { return defaultTexture; } }
+    [SerializeField] Texture2D deathTexture;
+    public Texture2D DeathTexture { get { return deathTexture; } }
 
     PlayerStates states;
 
@@ -31,15 +42,22 @@ public class Player : NetworkEntity
     Vector2 moveInput;
     public Vector2 MoveInput { get { return moveInput; } set { moveInput = value; } }
 
+    void Start()
+    {
+        Cursor.SetCursor(defaultTexture, Vector2.zero, CursorMode.Auto);
+    }
+
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) return;
+
+        SetNameRpc(PlayerManager.username);
 
         states = new PlayerStates(this);
         currentState = states.Idle();
         currentState.Enter();
 
-        localHud = Instantiate(defaultPlayerHud);
+        //localHud = Instantiate(defaultPlayerHud);
 
         ActionEvent.onHealthChanged += UpdateHud;
         ActionEvent.onSwingStarted += ActivateHitbox;
@@ -131,6 +149,13 @@ public class Player : NetworkEntity
         if (localHud == null) return;
 
         localHud.GetComponentInChildren<TMP_Text>().text = $"Health: {currentHealth}";
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void SetNameRpc(string name)
+    {
+        username = name;
+        this.name = $"Player ({name})";
     }
 
     [Rpc(SendTo.Everyone)]

@@ -1,19 +1,19 @@
 using System.Net.Sockets;
 using System.Net;
-using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 {
+    [Header("Input Fields")]
+    [SerializeField] TMP_InputField if_IPAddress;
+
     [Header("Buttons")]
     [SerializeField] Button hostButton;
     [SerializeField] Button connectButton;
-
-    [Header("Input Field")]
-    [SerializeField] TMP_InputField if_IPAddress;
 
     void Start()
     {
