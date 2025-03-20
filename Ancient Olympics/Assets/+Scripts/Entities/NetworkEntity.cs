@@ -13,10 +13,10 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// Only the owning client can call this.
     /// </summary>
     /// <param name="destination">The target movement position.</param>
-    public void SendMove(Vector3 destination)
+    public void SendMove(Vector3 destination, Vector3 currentPosition)
     {
         if (IsOwner)
-            SendRpc(nameof(SyncPositionRpc), destination);
+            SendRpc(nameof(SyncPositionRpc), destination, currentPosition);
     }
 
     /// <summary>
@@ -27,7 +27,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     public void SendRotation(Vector3 direction)
     {
         if (IsOwner)
-            SendRpc(nameof(SyncRotationRpc), direction);
+            SendRpc(nameof(SyncRotationRpc), direction, Vector3.zero);
     }
 
     /// <summary>
@@ -37,13 +37,13 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// <param name="functionName">The name of the RPC function to invoke.</param>
     /// <param name="data">The vector data for the function (movement direction or rotation target).</param>
     [Rpc(SendTo.Server)]
-    private void SendRpc(string functionName, Vector3 data)
+    private void SendRpc(string functionName, Vector3 data, Vector3 currentPosition)
     {
         if (IsServer)
         {
             if (functionName == nameof(SyncPositionRpc))
             {
-                rigidBody.AddForce(data * speed, ForceMode.Force);
+                rigidBody.MovePosition(Vector3.Lerp(rigidBody.position, currentPosition + data * speed * Time.fixedDeltaTime, 5 * Time.fixedDeltaTime));
                 SyncPositionRpc(rigidBody.position);
             }
             else if (functionName == nameof(SyncRotationRpc))
@@ -74,6 +74,6 @@ public abstract class NetworkEntity : NetworkBehaviour
     public void SyncRotationRpc(Quaternion syncedRotation)
     {
         if (!IsOwner)
-            rigidBody.rotation = Quaternion.Slerp(rigidBody.rotation, syncedRotation, 5f * Time.deltaTime);
+            rigidBody.rotation = Quaternion.Slerp(rigidBody.rotation, syncedRotation, 5f * Time.fixedDeltaTime);
     }
 }

@@ -17,7 +17,7 @@ public abstract class PlayerBaseState
     public abstract void Exit();
 
     void UpdateState() { }
-    protected void SwitchState(PlayerBaseState newState) 
+    public void SwitchState(PlayerBaseState newState) 
     {
         Exit(); // Exit current state
         newState.Enter(); // Enter new state

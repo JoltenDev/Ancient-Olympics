@@ -15,11 +15,13 @@ public class PlayerCooldownHandler : NetworkBehaviour
     public Action onFrozenCooldownStarted;
     public Action onAttackDurationStarted;
     public Action onComboWindowStarted;
+    public Action onHitStarted;
 
     public Action onDodgeCooldownCompleted;
     public Action onFrozenCooldownCompleted;
     public Action onAttackDurationCompleted;
     public Action onComboWindowCompleted;
+    public Action onHitCompleted;
 
     public override void OnNetworkSpawn()
     {
@@ -30,12 +32,14 @@ public class PlayerCooldownHandler : NetworkBehaviour
         RegisterCooldown(cooldownStartedEvents, "Frozen", () => onFrozenCooldownStarted?.Invoke());
         RegisterCooldown(cooldownStartedEvents, "Attack Duration", () => onAttackDurationStarted?.Invoke());
         RegisterCooldown(cooldownStartedEvents, "Combo Window", () => onComboWindowStarted?.Invoke());
+        RegisterCooldown(cooldownStartedEvents, "Hit", () => onHitStarted?.Invoke());
 
         // Register cooldowns
         RegisterCooldown(cooldownCompletedEvents, "Dodge", () => onDodgeCooldownCompleted?.Invoke());
         RegisterCooldown(cooldownCompletedEvents,"Frozen", () => onFrozenCooldownCompleted?.Invoke());
         RegisterCooldown(cooldownCompletedEvents, "Attack Duration", () => onAttackDurationCompleted?.Invoke());
         RegisterCooldown(cooldownCompletedEvents, "Combo Window", () => onComboWindowCompleted?.Invoke());
+        RegisterCooldown(cooldownCompletedEvents, "Hit", () => onHitCompleted?.Invoke());
     }
 
     public override void OnDestroy()

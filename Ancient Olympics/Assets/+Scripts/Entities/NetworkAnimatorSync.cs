@@ -12,6 +12,7 @@ public class NetworkAnimatorSync : NetworkBehaviour
         ActionEvent.onAnimatorMove += AnimateSetBoolRpc;
         ActionEvent.onAnimatorDodge += AnimateCrossFadeRpc;
         ActionEvent.onAnimatorMelee += AnimateCrossFadeRpc;
+        ActionEvent.onAnimatorHit += AnimateCrossFadeRpc;
     }
 
     public override void OnDestroy()
@@ -21,6 +22,7 @@ public class NetworkAnimatorSync : NetworkBehaviour
         ActionEvent.onAnimatorMove -= AnimateSetBoolRpc;
         ActionEvent.onAnimatorDodge -= AnimateCrossFadeRpc;
         ActionEvent.onAnimatorMelee -= AnimateCrossFadeRpc;
+        ActionEvent.onAnimatorHit -= AnimateCrossFadeRpc;
     }
 
     /// <summary>

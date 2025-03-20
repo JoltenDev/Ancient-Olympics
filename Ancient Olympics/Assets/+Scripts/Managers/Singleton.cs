@@ -7,11 +7,11 @@ public class Singleton<T> : NetworkBehaviour where T : NetworkBehaviour
 
     protected virtual void Awake()
     {
-        Debug.Log($"Awake called on {typeof(T)}: {gameObject.name}");
+        //Debug.Log($"Awake called on {typeof(T)}: {gameObject.name}");
 
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning($"Destroying duplicate instance of {typeof(T)} on {gameObject.name}");
+            //Debug.LogWarning($"Destroying duplicate instance of {typeof(T)} on {gameObject.name}");
             Destroy(gameObject);
             return;
         }

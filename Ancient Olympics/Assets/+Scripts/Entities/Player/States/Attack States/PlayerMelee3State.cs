@@ -8,7 +8,7 @@ public class PlayerMelee3State : PlayerBaseState
 
     public override void Enter()
     {
-        ActionEvent.onAttack?.Invoke();
+        ActionEvent.onSwingStarted?.Invoke();
 
         ActionEvent.onAnimatorMelee?.Invoke("melee3", 0.25f);
         player.CooldownHandler.StartCooldown("Attack Duration", 0.75f);
@@ -28,6 +28,7 @@ public class PlayerMelee3State : PlayerBaseState
 
     public override void Exit()
     {
+        ActionEvent.onSwingCompleted?.Invoke();
         player.CooldownHandler.onAttackDurationCompleted -= SwitchState;
     }
 

@@ -3,14 +3,25 @@ using UnityEngine;
 
 public class Hitbox : MonoBehaviour
 {
+    private ulong ownerClientId; // Store the owner ID (the attacker)
+
+    public void SetOwner(ulong clientId)
+    {
+        ownerClientId = clientId; // Assign the attacker's ID when the hitbox is created
+    }
+
     void OnTriggerEnter(Collider other)
     {
-        if (!NetworkManager.Singleton.IsServer) return;
-
-        if (other.gameObject != this && other.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
-            Debug.Log("Hit");
-            gameObject.SetActive(false);
-        }    
+            NetworkObject otherNetworkObject = other.GetComponent<NetworkObject>();
+
+            if (otherNetworkObject != null && otherNetworkObject.OwnerClientId != ownerClientId)
+            {
+                other.GetComponentInParent<Player>().PlayerHitRpc();
+                other.GetComponentInParent<NetworkHealth>()?.SendDamageRpc(5);
+                gameObject.SetActive(false);
+            }
+        }
     }
 }

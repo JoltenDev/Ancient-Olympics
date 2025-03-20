@@ -27,14 +27,15 @@ public class NetworkHealth : NetworkBehaviour
         ActionEvent.onHeal -= Heal;
     }
 
-    void Damage(float amount)
+    public void Damage(float amount)
     {
         if (!IsOwner) return;
 
+        Debug.Log($"Took damage {amount}");
         SendDamageRpc(amount);
     }
 
-    void Heal(float amount)
+    public void Heal(float amount)
     {
         if (!IsOwner) return;
         
@@ -42,7 +43,7 @@ public class NetworkHealth : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void SendDamageRpc(float amount)
+    public void SendDamageRpc(float amount)
     {
         if (!IsServer) return;
 
@@ -51,7 +52,7 @@ public class NetworkHealth : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void SendHealRpc(float amount)
+    public void SendHealRpc(float amount)
     {
         if (!IsServer) return;
 

@@ -1,6 +1,8 @@
 using UnityEngine;
 using Unity.Netcode;
 using TMPro;
+using System;
+using UnityEngine.InputSystem;
 
 public class Player : NetworkEntity
 {
@@ -31,21 +33,31 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
-        inputHandler.Initialize();
-
         states = new PlayerStates(this);
         currentState = states.Idle();
         currentState.Enter();
 
-        ActionEvent.onAttack += ActivateHitbox;
+        localHud = Instantiate(defaultPlayerHud);
+
+        ActionEvent.onHealthChanged += UpdateHud;
+        ActionEvent.onSwingStarted += ActivateHitbox;
+        ActionEvent.onSwingCompleted += DeactivateHitbox;
+
+        inputHandler.Initialize();
         inputHandler.onMoveInput += SetMoveInput;
+
+        hitbox.GetComponent<Hitbox>().SetOwner(OwnerClientId); // Set the attacker’s client ID
     }
 
     public override void OnDestroy()
     {
         if (!IsOwner) return;
 
-        ActionEvent.onAttack -= ActivateHitbox;
+        Destroy(localHud);
+        ActionEvent.onHealthChanged -= UpdateHud;
+        ActionEvent.onSwingStarted -= ActivateHitbox;
+        ActionEvent.onSwingCompleted -= DeactivateHitbox;
+
         inputHandler.onMoveInput -= SetMoveInput;
         inputHandler.Dispose();
     }
@@ -55,8 +67,6 @@ public class Player : NetworkEntity
         if (!IsOwner) return;
 
         currentState.Update();
-
-        Rotate();
     }
 
     void FixedUpdate()
@@ -64,11 +74,17 @@ public class Player : NetworkEntity
         if (!IsOwner) return;
 
         currentState.FixedUpdate();
+
+        Rotate();
     }
 
     void SetMoveInput(Vector2 input) => moveInput = input;
 
+    [Rpc(SendTo.Everyone)]
+    public void PlayerHitRpc() => currentState?.SwitchState(states?.Hit());
+
     void ActivateHitbox() => hitbox.SetActive(true);
+    void DeactivateHitbox() => hitbox.SetActive(false);
 
     /// <summary>
     /// Rotates player towards the mouse position in world space
@@ -84,21 +100,19 @@ public class Player : NetworkEntity
             direction.y = 0;
 
             // (From local client [messenger]) Send rotation direction to server
-            SendRotation(direction);
+            SendRotation(direction * Time.fixedDeltaTime);
         }
     }
 
     [Rpc(SendTo.Server)]
-    public void SendDodgeRpc(Vector3 direction)
+    public void SendDodgeRpc(Vector3 direction, Vector3 forward, Vector3 right)
     {
-        Vector3 camForward = Camera.main.transform.forward;
-        Vector3 camRight = Camera.main.transform.right;
-        camForward.y = 0;
-        camRight.y = 0;
-        camForward.Normalize();
-        camRight.Normalize();
+        forward.y = 0;
+        right.y = 0;
+        forward.Normalize();
+        right.Normalize();
 
-        Vector3 dodgeDirection = (camRight * direction.x) + (camForward * direction.y);
+        Vector3 dodgeDirection = (right * direction.x) + (forward * direction.y);
 
         if (dodgeDirection.sqrMagnitude > 0.01f)
         {

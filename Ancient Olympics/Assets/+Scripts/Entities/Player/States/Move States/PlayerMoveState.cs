@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerMoveState : PlayerBaseState
 {
     Vector3 direction;
+    Vector3 relativeDirection;
 
     public PlayerMoveState(Player player, PlayerStates states) : base(player, states)
     {
@@ -21,11 +22,12 @@ public class PlayerMoveState : PlayerBaseState
         SwitchState(player.MoveInput); // Switch state to idle when move input is Vector2.zero
 
         direction = new Vector3(player.MoveInput.x, 0, player.MoveInput.y);
+        relativeDirection = player.transform.forward * direction.z + player.transform.right * direction.x;
     }
 
     public override void FixedUpdate()
     {
-        player.SendMove(direction); // Send movement to server
+        player.SendMove(relativeDirection, player.transform.position); // Send movement to server
     }
 
     public override void Exit()
