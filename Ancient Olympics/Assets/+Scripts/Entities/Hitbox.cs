@@ -18,9 +18,13 @@ public class Hitbox : MonoBehaviour
 
             if (otherNetworkObject != null && otherNetworkObject.OwnerClientId != ownerClientId)
             {
-                other.GetComponentInParent<Player>().PlayerHitRpc();
-                other.GetComponentInParent<NetworkHealth>()?.SendDamageRpc(5);
-                gameObject.SetActive(false);
+                Player player = other.GetComponent<Player>();
+                if (player.enabled)
+                {
+                    other.GetComponentInParent<Player>().PlayerHitRpc();
+                    other.GetComponentInParent<NetworkHealth>()?.SendDamageRpc(25);
+                    gameObject.SetActive(false);
+                }
             }
         }
     }

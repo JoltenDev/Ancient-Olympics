@@ -216,6 +216,7 @@ MonoBehaviour:
   dodgeStrength: 10
   hitbox: {fileID: 8096241349572696425}
   cooldownHandler: {fileID: -6198044839933822205}
+  networkHealth: {fileID: -1386306046626246304}
 --- !u!114 &-6198044839933822205
 MonoBehaviour:
   m_ObjectHideFlags: 0

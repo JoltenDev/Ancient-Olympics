@@ -9,20 +9,16 @@ public class NetworkAnimatorSync : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        ActionEvent.onAnimatorMove += AnimateSetBoolRpc;
-        ActionEvent.onAnimatorDodge += AnimateCrossFadeRpc;
-        ActionEvent.onAnimatorMelee += AnimateCrossFadeRpc;
-        ActionEvent.onAnimatorHit += AnimateCrossFadeRpc;
+        ActionEvent.onAnimatorSetBool += AnimateSetBoolRpc;
+        ActionEvent.onAnimatorCrossFade += AnimateCrossFadeRpc;
     }
 
     public override void OnDestroy()
     {
         if (!IsOwner) return;
 
-        ActionEvent.onAnimatorMove -= AnimateSetBoolRpc;
-        ActionEvent.onAnimatorDodge -= AnimateCrossFadeRpc;
-        ActionEvent.onAnimatorMelee -= AnimateCrossFadeRpc;
-        ActionEvent.onAnimatorHit -= AnimateCrossFadeRpc;
+        ActionEvent.onAnimatorSetBool -= AnimateSetBoolRpc;
+        ActionEvent.onAnimatorCrossFade -= AnimateCrossFadeRpc;
     }
 
     /// <summary>

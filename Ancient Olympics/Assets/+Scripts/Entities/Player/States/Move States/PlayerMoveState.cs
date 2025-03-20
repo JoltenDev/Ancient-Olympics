@@ -11,7 +11,7 @@ public class PlayerMoveState : PlayerBaseState
 
     public override void Enter()
     {
-        ActionEvent.onAnimatorMove?.Invoke("IsMoving", true); // Start movement animation
+        ActionEvent.onAnimatorSetBool?.Invoke("IsMoving", true); // Start movement animation
 
         player.InputHandler.onDodgeInput += SwitchState; // Subscribe dodge input to switch to dodge state
         player.InputHandler.onAttackInput += SwitchState;
@@ -35,7 +35,7 @@ public class PlayerMoveState : PlayerBaseState
         player.InputHandler.onDodgeInput -= SwitchState;
         player.InputHandler.onAttackInput -= SwitchState;
 
-        ActionEvent.onAnimatorMove?.Invoke("IsMoving", false); // Stop move animation
+        ActionEvent.onAnimatorSetBool?.Invoke("IsMoving", false); // Stop move animation
     }
 
     void SwitchState(Vector2 input)

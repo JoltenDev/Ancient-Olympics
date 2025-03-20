@@ -1,8 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
 using TMPro;
-using System;
-using UnityEngine.InputSystem;
 
 public class Player : NetworkEntity
 {
@@ -25,6 +23,10 @@ public class Player : NetworkEntity
     [Header("Cooldown Handler")]
     [SerializeField] PlayerCooldownHandler cooldownHandler;
     public PlayerCooldownHandler CooldownHandler { get { return cooldownHandler; } }
+
+    [Header("Network Health")]
+    [SerializeField] NetworkHealth networkHealth;
+    public NetworkHealth NetworkHealth { get { return networkHealth; } }
 
     Vector2 moveInput;
     public Vector2 MoveInput { get { return moveInput; } set { moveInput = value; } }
@@ -129,5 +131,12 @@ public class Player : NetworkEntity
         if (localHud == null) return;
 
         localHud.GetComponentInChildren<TMP_Text>().text = $"Health: {currentHealth}";
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void DisablePlayerRpc()
+    {
+        CooldownHandler.enabled = false;
+        enabled = false;
     }
 }

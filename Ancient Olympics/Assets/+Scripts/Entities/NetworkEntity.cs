@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 
-[RequireComponent(typeof(Rigidbody), typeof(NetworkAnimatorSync))]
+[RequireComponent(typeof(Rigidbody))]
 public abstract class NetworkEntity : NetworkBehaviour
 {
     [Header("Entity Fields")]

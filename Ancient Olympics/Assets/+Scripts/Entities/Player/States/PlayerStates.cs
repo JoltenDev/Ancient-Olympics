@@ -16,4 +16,5 @@ public class PlayerStates {
     public PlayerBaseState Melee2() { return new PlayerMelee2State(player, this); }
     public PlayerBaseState Melee3() { return new PlayerMelee3State(player, this); }
     public PlayerBaseState Hit() { return new PlayerHitState(player, this); }
+    public PlayerBaseState Death() { return new PlayerDeathState(player, this); }
 }

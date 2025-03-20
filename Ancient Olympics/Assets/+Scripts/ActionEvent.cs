@@ -12,10 +12,9 @@ public static class ActionEvent
     public static Action onSwingCompleted;
     public static Action<float> onDamage;
     public static Action<float> onHeal;
+    public static Action onDeath;
 
     // Animator Actions
-    public static Action<string, bool> onAnimatorMove;
-    public static Action<string, float> onAnimatorDodge;
-    public static Action<string, float> onAnimatorMelee;
-    public static Action<string, float> onAnimatorHit;
+    public static Action<string, bool> onAnimatorSetBool;
+    public static Action<string, float> onAnimatorCrossFade;
 }

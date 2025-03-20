@@ -8,9 +8,13 @@ public class PlayerHitState : PlayerBaseState
 
     public override void Enter()
     {
-        ActionEvent.onAnimatorHit?.Invoke("hit1", 0.25f); // Start hit animation
+        ActionEvent.onAnimatorCrossFade?.Invoke("hit1", 0.25f); // Start hit animation
 
         player.CooldownHandler.StartCooldown("Hit", 0.5f);
+
+        if (player.NetworkHealth.CurrentHealth.Value <= 0)
+            SwitchState(states.Death());
+
         player.CooldownHandler.onHitCompleted += SwitchState;
     }
 

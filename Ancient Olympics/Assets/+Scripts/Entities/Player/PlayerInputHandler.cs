@@ -24,6 +24,9 @@ public class PlayerInputHandler
         controls.Enable();
     }
 
+    public void UnblockInput() => controls?.Enable();
+    public void BlockInput() => controls?.Disable();
+
     public void Dispose()
     {
         if (controls == null) return;

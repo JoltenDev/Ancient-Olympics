@@ -5,6 +5,7 @@ public class NetworkHealth : NetworkBehaviour
 {
     [SerializeField] float maxHealth = 100f;
     [SerializeField] NetworkVariable<float> currentHealth = new NetworkVariable<float>();
+    public NetworkVariable<float> CurrentHealth { get { return currentHealth; } }
 
     public override void OnNetworkSpawn()
     {
@@ -31,7 +32,6 @@ public class NetworkHealth : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        Debug.Log($"Took damage {amount}");
         SendDamageRpc(amount);
     }
 
@@ -61,6 +61,9 @@ public class NetworkHealth : NetworkBehaviour
 
     void CheckDeath()
     {
-
+        if (currentHealth.Value <= 0)
+        {
+            ActionEvent.onDeath?.Invoke();
+        }
     }
 }

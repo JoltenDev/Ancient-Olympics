@@ -10,7 +10,7 @@ public class PlayerMelee3State : PlayerBaseState
     {
         ActionEvent.onSwingStarted?.Invoke();
 
-        ActionEvent.onAnimatorMelee?.Invoke("melee3", 0.25f);
+        ActionEvent.onAnimatorCrossFade?.Invoke("melee3", 0.25f);
         player.CooldownHandler.StartCooldown("Attack Duration", 0.75f);
 
         player.CooldownHandler.onAttackDurationCompleted += SwitchState;
