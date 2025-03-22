@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Singleton<T> : NetworkBehaviour where T : NetworkBehaviour
 {
-    public static Singleton<T> Instance { get; private set; }
+    public static T Instance { get; private set; }
 
     protected virtual void Awake()
     {
@@ -16,7 +16,7 @@ public class Singleton<T> : NetworkBehaviour where T : NetworkBehaviour
             return;
         }
 
-        Instance = this;
+        Instance = (T)(object)this;
         DontDestroyOnLoad(gameObject);
     }
 }

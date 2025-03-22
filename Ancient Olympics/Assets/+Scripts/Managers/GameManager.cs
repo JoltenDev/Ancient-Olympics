@@ -1,6 +1,5 @@
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Unity.Netcode;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -14,21 +13,10 @@ public class GameManager : Singleton<GameManager>
         SwordFight
     }
 
-    public static GameState State { get; private set; }
-    public static string CurrentScene { get; private set; }
+    public GameState State { get; private set; }
 
-    void Start()
+    public void ChangeState(GameState newState)
     {
-        ChangeState(GameState.Lobby);
-    }
-
-    /// <summary>
-    /// Controls the state of the game
-    /// </summary>
-    /// <param name="newState"> State to be swapped into </param>
-    void ChangeState(GameState newState)
-    {
-        ActionEvent.onStateChanged?.Invoke();
         State = newState;
 
         switch (State)
@@ -37,46 +25,43 @@ public class GameManager : Singleton<GameManager>
                 LobbyState();
                 break;
             case GameState.Started:
-                break;
-            case GameState.Joust:
-                break;
-            case GameState.Assassination:
-                break;
-            case GameState.JavelinThrow:
-                break;
-            case GameState.SwordFight:
+                StartedState();
                 break;
         }
     }
 
     void LobbyState()
     {
-        CurrentScene = "Scene_Lobby";
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        ChangeScene();
-    }
-
-    /// <summary>
-    /// Handles the scene management
-    /// </summary>
-    /// <returns> true if the scene successfully loaded, false otherwise </returns>
-    bool ChangeScene()
-    {
-        if (IsServer && !string.IsNullOrEmpty(CurrentScene))
+        // Load the lobby scene and instantiate the lobby menu
+        NetworkSceneManager.Instance.ChangeScene("Scene_Lobby", () =>
         {
-            var status = NetworkManager.SceneManager.LoadScene(CurrentScene, LoadSceneMode.Single);
-
-            if (status != SceneEventProgressStatus.Started)
+            if (IsServer)
             {
-                Debug.LogWarning($"Failed to load {CurrentScene} " + $"with a {nameof(SceneEventProgressStatus)}: {status}");
-                return false;
+                ActionEvent.onGameStarted += RepositionPlayers;
+                //UIManager.Instance.UpdateLobbyUI();
             }
-        }
+        });
+    }
 
-        return true;
+    void StartedState()
+    {
+        // Load the arena scene and handle other game state transitions
+        NetworkSceneManager.Instance.ChangeScene("Scene_Arena", () =>
+        {
+            ActionEvent.onGameStarted?.Invoke();
+        });
+    }
+
+    public void RepositionPlayers()
+    {
+        foreach (var player in NetworkLobbyManager.Instance.playersInServer.Values)
+        {
+            float spawn_x = Random.Range(-3f, 3.25f);
+            float spawn_z = Random.Range(-1.5f, 1.5f);
+            Vector3 spawnPos = new Vector3(spawn_x, 0.4f, spawn_z);
+
+            player.GetComponent<Rigidbody>().position = spawnPos;
+        }
     }
 
     public void ApplicationQuit() => Application.Quit();

@@ -1,82 +1,67 @@
 using UnityEngine;
 using Unity.Netcode;
-using TMPro;
-using UnityEngine.Rendering;
 
 public class Player : NetworkEntity
 {
-    [Header("Username")]
     [SerializeField] string username;
-    public string Username { get { return username; } set { username = value; } }
+    [SerializeField] GameObject weapon;
 
-    [Header("Player Fields")]
-    [SerializeField] GameObject defaultPlayerHud;
-    [SerializeField] float dodgeStrength = 5f;
-    GameObject localHud = null;
-    [SerializeField] GameObject hitbox;
-
-    [Header("Cursor Textures")]
-    [SerializeField] Texture2D defaultTexture;
-    public Texture2D DefaultTexture { get { return defaultTexture; } }
-    [SerializeField] Texture2D deathTexture;
-    public Texture2D DeathTexture { get { return deathTexture; } }
+    [SerializeField] StandardData data;
+    [SerializeField] NetworkHealth health;
+    [SerializeField] PlayerCooldownHandler cooldownHandler;
 
     PlayerStates states;
-
-    [Header("Base State")]
     PlayerBaseState currentState;
-    public PlayerBaseState CurrentState { get { return currentState; } set { currentState = value; } }
-
-    [Header("Input Handler")]
     PlayerInputHandler inputHandler = new PlayerInputHandler();
-    public PlayerInputHandler InputHandler { get { return inputHandler; } }
 
-    [Header("Cooldown Handler")]
-    [SerializeField] PlayerCooldownHandler cooldownHandler;
-    public PlayerCooldownHandler CooldownHandler { get { return cooldownHandler; } }
-
-    [Header("Network Health")]
-    [SerializeField] NetworkHealth networkHealth;
-    public NetworkHealth NetworkHealth { get { return networkHealth; } }
-
+    GameObject hitbox;
     Vector2 moveInput;
-    public Vector2 MoveInput { get { return moveInput; } set { moveInput = value; } }
+    float dodgeStrength = 10f;
+
+    public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
+    public PlayerInputHandler InputHandler { get => inputHandler; }
+    public PlayerCooldownHandler CooldownHandler { get => cooldownHandler; }
+    public NetworkHealth NetworkHealth { get => health; }
+    public Texture2D DefaultTexture => data.defaultTexture;
+    public Texture2D DeathTexture => data.deathTexture;
+    public Vector2 MoveInput { get => moveInput; set => moveInput = value; }
 
     void Start()
     {
-        Cursor.SetCursor(defaultTexture, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(DefaultTexture, Vector2.zero, CursorMode.Auto);
     }
 
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) return;
 
-        SetNameRpc(PlayerManager.username);
+        SendUsernameRpc(NetworkAccount.Username);
 
         states = new PlayerStates(this);
-        currentState = states.Idle();
-        currentState.Enter();
+        CurrentState = states.Idle();
+        CurrentState.Enter();
 
         //localHud = Instantiate(defaultPlayerHud);
 
         ActionEvent.onHealthChanged += UpdateHud;
-        ActionEvent.onSwingStarted += ActivateHitbox;
-        ActionEvent.onSwingCompleted += DeactivateHitbox;
+        //ActionEvent.onSwingStarted += ActivateHitbox;
+        //ActionEvent.onSwingCompleted += DeactivateHitbox;
 
         inputHandler.Initialize();
         inputHandler.onMoveInput += SetMoveInput;
 
-        hitbox.GetComponent<Hitbox>().SetOwner(OwnerClientId); // Set the attacker’s client ID
+        //Weapon.GetComponentInChildren<Hitbox>().SetOwner(OwnerClientId); // Set the attacker’s client ID
+        //hitbox = Weapon.GetComponentInChildren<Hitbox>().gameObject;
     }
 
     public override void OnDestroy()
     {
         if (!IsOwner) return;
 
-        Destroy(localHud);
+        //Destroy(localHud);
         ActionEvent.onHealthChanged -= UpdateHud;
-        ActionEvent.onSwingStarted -= ActivateHitbox;
-        ActionEvent.onSwingCompleted -= DeactivateHitbox;
+        //ActionEvent.onSwingStarted -= ActivateHitbox;
+        //ActionEvent.onSwingCompleted -= DeactivateHitbox;
 
         inputHandler.onMoveInput -= SetMoveInput;
         inputHandler.Dispose();
@@ -86,14 +71,14 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
-        currentState.Update();
+        CurrentState.Update();
     }
 
     void FixedUpdate()
     {
         if (!IsOwner) return;
 
-        currentState.FixedUpdate();
+        CurrentState.FixedUpdate();
 
         Rotate();
     }
@@ -101,10 +86,10 @@ public class Player : NetworkEntity
     void SetMoveInput(Vector2 input) => moveInput = input;
 
     [Rpc(SendTo.Everyone)]
-    public void PlayerHitRpc() => currentState?.SwitchState(states?.Hit());
+    public void PlayerHitRpc() => CurrentState?.SwitchState(states?.Hit());
 
-    void ActivateHitbox() => hitbox.SetActive(true);
-    void DeactivateHitbox() => hitbox.SetActive(false);
+    //void ActivateHitbox() => hitbox.SetActive(true);
+    //void DeactivateHitbox() => hitbox.SetActive(false);
 
     /// <summary>
     /// Rotates player towards the mouse position in world space
@@ -134,28 +119,19 @@ public class Player : NetworkEntity
 
         Vector3 dodgeDirection = (right * direction.x) + (forward * direction.y);
 
-        if (dodgeDirection.sqrMagnitude > 0.01f)
-        {
-            dodgeDirection.Normalize();
-            rigidBody.AddForce(dodgeDirection * dodgeStrength, ForceMode.Impulse);
-        }
+        rigidBody.AddForce(dodgeDirection * dodgeStrength, ForceMode.Impulse);
 
         SyncPositionRpc(rigidBody.position);
     }
 
     void UpdateHud(float currentHealth)
     {
+        /*
         if (!IsOwner) return;
         if (localHud == null) return;
 
         localHud.GetComponentInChildren<TMP_Text>().text = $"Health: {currentHealth}";
-    }
-
-    [Rpc(SendTo.Everyone)]
-    void SetNameRpc(string name)
-    {
-        username = name;
-        this.name = $"Player ({name})";
+        */
     }
 
     [Rpc(SendTo.Everyone)]
@@ -163,5 +139,16 @@ public class Player : NetworkEntity
     {
         CooldownHandler.enabled = false;
         enabled = false;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void SendUsernameRpc(string username, RpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        this.username = username;
+        gameObject.name = $"Player ({username})";
+
+        Debug.Log($"Client {clientId} set their username to {username}");
+        // Store the username for this client in a dictionary (optional)
     }
 }

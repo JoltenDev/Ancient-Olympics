@@ -333,7 +333,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Start <color=red>[0/4]'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0d0b7b2417c2a704a990b8644252eef2, type: 2}
   m_sharedMaterial: {fileID: 573966621479206513, guid: 0d0b7b2417c2a704a990b8644252eef2, type: 2}

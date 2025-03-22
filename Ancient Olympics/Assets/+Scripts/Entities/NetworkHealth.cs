@@ -11,6 +11,8 @@ public class NetworkHealth : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        SendHealRpc(maxHealth);
+
         ActionEvent.onDamage += Damage;
         ActionEvent.onHeal += Heal;
 

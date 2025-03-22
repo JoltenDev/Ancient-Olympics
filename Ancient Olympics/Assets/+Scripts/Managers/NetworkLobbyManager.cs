@@ -1,91 +1,130 @@
-using System.Net.Sockets;
-using System.Net;
+using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 {
-    [Header("Input Fields")]
+    [Header("UI Elements")]
     [SerializeField] TMP_InputField if_IPAddress;
-
-    [Header("Buttons")]
     [SerializeField] Button hostButton;
     [SerializeField] Button connectButton;
 
+    [SerializeField] GameObject playerPrefab;
+
+    public Dictionary<ulong, GameObject> playersInServer = new Dictionary<ulong, GameObject>();
+    public static event Action<int> OnPlayerCountChanged;
+
     void Start()
     {
-        hostButton.onClick.AddListener(delegate
-        {
-            SetHostIP();
-            NetworkManager.Singleton.StartHost();
-        });
-
-        connectButton.onClick.AddListener(delegate 
-        {
-            SetTransportIP();
-            NetworkManager.Singleton.StartClient();
-        });
+        hostButton.onClick.AddListener(StartHost);
+        connectButton.onClick.AddListener(StartClient);
     }
 
-    /// <summary>
-    /// Sets host's connection IP and Port to their local IP, auto generates Port
-    /// </summary>
+    void StartHost()
+    {
+        //SetHostIP();
+        NetworkManager.Singleton.StartHost();
+
+        if (NetworkManager.Singleton.IsServer)
+        {
+            GameManager.Instance.ChangeState(GameManager.GameState.Lobby);
+            OnPlayerCountChanged += UIManager.Instance.UpdateLobbyUI;
+            UpdatePlayerCount();  // Initial update when host starts
+        }
+    }
+
+    void StartClient()
+    {
+        //SetTransportIP();
+        NetworkManager.Singleton.StartClient();
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer && NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        }
+    }
+
+    public override void OnDestroy()
+    {
+        if (IsServer && NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+    }
+
+    void OnClientConnected(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        // Spawn player only on the server
+        GameObject player = Instantiate(playerPrefab, new Vector3(0, 2, 0), Quaternion.identity);
+        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+        playersInServer[clientId] = player;
+        DontDestroyOnLoad(player);
+
+        UpdatePlayerCount();
+    }
+
+    void OnClientDisconnected(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        if (playersInServer.TryGetValue(clientId, out GameObject player))
+        {
+            Destroy(player);
+            playersInServer.Remove(clientId);
+        }
+
+        UpdatePlayerCount();
+    }
+    
+    void UpdatePlayerCount()
+    {
+        OnPlayerCountChanged?.Invoke(playersInServer.Count);
+    }
+
     void SetHostIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         if (transport != null)
         {
-            string hostIP = GetLocalIPAddress();
-
-            //transport.ConnectionData.Address = hostIP;
-            //transport.ConnectionData.Port = (ushort)Random.Range(7777, 7999);
+            transport.ConnectionData.Address = GetLocalIPAddress();
+            transport.ConnectionData.Port = (ushort)UnityEngine.Random.Range(7777, 7999);
         }
     }
 
-    /// <summary>
-    /// Retrieves entered IP and Port from client
-    /// </summary>
-    void SetTransportIP()
+   void SetTransportIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        if (transport != null && if_IPAddress.text != "")
+        if (transport != null && !string.IsNullOrEmpty(if_IPAddress.text))
         {
             string[] addressParts = if_IPAddress.text.Split(':');
-            string ip = addressParts[0];
-            ushort port = 7777;
-
-            if (addressParts.Length > 1)
-            {
-                if (ushort.TryParse(addressParts[1], out ushort parsedPort))
-                {
-                    port = parsedPort;
-                }
-                else
-                {
-                    Debug.LogWarning("Invalid port provided, using default 7777.");
-                }
-            }
-
-            transport.ConnectionData.Address = ip;
-            transport.ConnectionData.Port = port;
+            transport.ConnectionData.Address = addressParts[0];
+            transport.ConnectionData.Port = (addressParts.Length > 1 && ushort.TryParse(addressParts[1], out ushort port)) ? port : (ushort)7777;
         }
     }
 
-    /// <summary>
-    /// Retrieves local IP Address of host
-    /// </summary>
-    /// <returns> "127.0.0.1" if not found </returns>
     string GetLocalIPAddress()
     {
-        foreach (var netInterface in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
+        foreach (var netInterface in System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList)
         {
-            if (netInterface.AddressFamily == AddressFamily.InterNetwork)
+            if (netInterface.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                 return netInterface.ToString();
         }
-
         return "127.0.0.1";
     }
 }

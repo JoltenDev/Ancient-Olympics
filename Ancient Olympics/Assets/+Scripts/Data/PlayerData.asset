@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8630be787144d4a49878b39ec44bb619, type: 3}
+  m_Name: PlayerData
+  m_EditorClassIdentifier: 
+  username: 
+  defaultPlayerHud: {fileID: 0}
+  dodgeStrength: 5
+  weapon: {fileID: 7846570145467701771, guid: 18c21ec7f85dc0746a78a811baa60e6e, type: 3}
+  defaultTexture: {fileID: 2800000, guid: 9bcf4a78d335d154d870416b7ef06c5d, type: 3}
+  deathTexture: {fileID: 2800000, guid: 8bbef9c963c03d3429c3cf716178fb9b, type: 3}
+  cooldownHandler: {fileID: 0}
+  networkHealth: {fileID: 0}
