@@ -11,8 +11,8 @@ public class PlayerFrozenState : PlayerBaseState
 
     public override void Enter()
     {
-        player.CooldownHandler.StartCooldown("Frozen", time); // Apply freeze for duration 'time'
-        player.CooldownHandler.onFrozenCooldownCompleted += SwitchState; // Switch state when freeze is over
+        player.CooldownHandler.StartTimer("Frozen", time); // Apply freeze for duration 'time'
+        player.onFrozenCooldownCompleted += SwitchState; // Switch state when freeze is over
     }
 
     public override void Update()
@@ -25,7 +25,7 @@ public class PlayerFrozenState : PlayerBaseState
 
     public override void Exit()
     {
-        player.CooldownHandler.onFrozenCooldownCompleted -= SwitchState;
+        player.onFrozenCooldownCompleted -= SwitchState;
     }
 
     void SwitchState()

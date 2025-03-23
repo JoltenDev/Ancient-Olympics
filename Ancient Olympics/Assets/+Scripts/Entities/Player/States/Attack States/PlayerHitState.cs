@@ -10,12 +10,12 @@ public class PlayerHitState : PlayerBaseState
     {
         ActionEvent.onAnimatorCrossFade?.Invoke("hit1", 0.25f); // Start hit animation
 
-        player.CooldownHandler.StartCooldown("Hit", 0.5f);
+        player.CooldownHandler.StartTimer("Hit", 0.5f);
 
         if (player.NetworkHealth.CurrentHealth.Value <= 0)
             SwitchState(states.Death());
 
-        player.CooldownHandler.onHitCompleted += SwitchState;
+        player.onHitCompleted += SwitchState;
     }
 
     public override void Update()
@@ -30,7 +30,7 @@ public class PlayerHitState : PlayerBaseState
 
     public override void Exit()
     {
-        player.CooldownHandler.onHitCompleted -= SwitchState;
+        player.onHitCompleted -= SwitchState;
     }
 
     void SwitchState()

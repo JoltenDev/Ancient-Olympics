@@ -16,6 +16,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
     [SerializeField] GameObject playerPrefab;
 
     public Dictionary<ulong, GameObject> playersInServer = new Dictionary<ulong, GameObject>();
+    public int PlayerCount { get => playersInServer.Count; }
     public static event Action<int> OnPlayerCountChanged;
 
     void Start()
@@ -31,7 +32,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
         if (NetworkManager.Singleton.IsServer)
         {
-            GameManager.Instance.ChangeState(GameManager.GameState.Lobby);
+            GameManager.Instance.SwitchState(GameManager.Instance.States.GameLobbyState());
             OnPlayerCountChanged += UIManager.Instance.UpdateLobbyUI;
             UpdatePlayerCount();  // Initial update when host starts
         }
@@ -76,7 +77,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         playersInServer[clientId] = player;
         DontDestroyOnLoad(player);
 
-        UpdatePlayerCount();
+        UpdatePlayerCount(); // Update player count
     }
 
     void OnClientDisconnected(ulong clientId)
@@ -94,7 +95,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
     
     void UpdatePlayerCount()
     {
-        OnPlayerCountChanged?.Invoke(playersInServer.Count);
+        OnPlayerCountChanged?.Invoke(PlayerCount);
     }
 
     void SetHostIP()
@@ -107,7 +108,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         }
     }
 
-   void SetTransportIP()
+    void SetTransportIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         if (transport != null && !string.IsNullOrEmpty(if_IPAddress.text))

@@ -11,9 +11,9 @@ public class PlayerMelee3State : PlayerBaseState
         ActionEvent.onSwingStarted?.Invoke();
 
         ActionEvent.onAnimatorCrossFade?.Invoke("melee3", 0.25f);
-        player.CooldownHandler.StartCooldown("Attack Duration", 0.75f);
+        player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
 
-        player.CooldownHandler.onAttackDurationCompleted += SwitchState;
+        player.onAttackDurationCompleted += SwitchState;
     }
 
     public override void Update()
@@ -29,7 +29,7 @@ public class PlayerMelee3State : PlayerBaseState
     public override void Exit()
     {
         ActionEvent.onSwingCompleted?.Invoke();
-        player.CooldownHandler.onAttackDurationCompleted -= SwitchState;
+        player.onAttackDurationCompleted -= SwitchState;
     }
 
     void SwitchState()

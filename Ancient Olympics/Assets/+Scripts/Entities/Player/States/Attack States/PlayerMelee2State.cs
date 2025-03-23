@@ -13,12 +13,12 @@ public class PlayerMelee2State : PlayerBaseState
         ActionEvent.onSwingStarted?.Invoke();
 
         ActionEvent.onAnimatorCrossFade?.Invoke("melee2", 0.25f);
-        player.CooldownHandler.StartCooldown("Attack Duration", 0.75f);
-        player.CooldownHandler.StartCooldown("Combo Window", 0.5f);
+        player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
+        player.CooldownHandler.StartTimer("Combo Window", 0.5f);
 
         player.InputHandler.onAttackInput += SwitchToNextAttack;
-        player.CooldownHandler.onAttackDurationCompleted += ResetState;
-        player.CooldownHandler.onComboWindowCompleted += CanAttack;
+        player.onAttackDurationCompleted += ResetState;
+        player.onComboWindowCompleted += CanAttack;
     }
 
     public override void Update()
@@ -36,8 +36,8 @@ public class PlayerMelee2State : PlayerBaseState
         ActionEvent.onSwingCompleted?.Invoke();
 
         player.InputHandler.onAttackInput -= SwitchToNextAttack;
-        player.CooldownHandler.onAttackDurationCompleted -= ResetState;
-        player.CooldownHandler.onComboWindowCompleted -= CanAttack;
+        player.onAttackDurationCompleted -= ResetState;
+        player.onComboWindowCompleted -= CanAttack;
 
         canAttack = false;
     }

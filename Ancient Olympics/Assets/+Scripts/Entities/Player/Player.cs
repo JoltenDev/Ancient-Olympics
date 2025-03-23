@@ -1,30 +1,47 @@
 using UnityEngine;
 using Unity.Netcode;
+using TMPro;
+using System;
 
 public class Player : NetworkEntity
 {
     [SerializeField] string username;
     [SerializeField] GameObject weapon;
+    [SerializeField] GameObject nameUI;
+    [SerializeField] GameObject hud;
 
     [SerializeField] StandardData data;
     [SerializeField] NetworkHealth health;
-    [SerializeField] PlayerCooldownHandler cooldownHandler;
 
     PlayerStates states;
     PlayerBaseState currentState;
     PlayerInputHandler inputHandler = new PlayerInputHandler();
+    Timer cooldownHandler = new Timer();
 
     GameObject hitbox;
     Vector2 moveInput;
     float dodgeStrength = 10f;
 
+    public string Username { get => username; }
     public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
     public PlayerInputHandler InputHandler { get => inputHandler; }
-    public PlayerCooldownHandler CooldownHandler { get => cooldownHandler; }
+    public Timer CooldownHandler { get => cooldownHandler; }
     public NetworkHealth NetworkHealth { get => health; }
     public Texture2D DefaultTexture => data.defaultTexture;
     public Texture2D DeathTexture => data.deathTexture;
     public Vector2 MoveInput { get => moveInput; set => moveInput = value; }
+
+    public Action onDodgeCooldownStarted;
+    public Action onFrozenCooldownStarted;
+    public Action onAttackDurationStarted;
+    public Action onComboWindowStarted;
+    public Action onHitStarted;
+
+    public Action onDodgeCooldownCompleted;
+    public Action onFrozenCooldownCompleted;
+    public Action onAttackDurationCompleted;
+    public Action onComboWindowCompleted;
+    public Action onHitCompleted;
 
     void Start()
     {
@@ -36,6 +53,7 @@ public class Player : NetworkEntity
         if (!IsOwner) return;
 
         SendUsernameRpc(NetworkAccount.Username);
+        UIManager.Instance.Hud = hud;
 
         states = new PlayerStates(this);
         CurrentState = states.Idle();
@@ -52,6 +70,20 @@ public class Player : NetworkEntity
 
         //Weapon.GetComponentInChildren<Hitbox>().SetOwner(OwnerClientId); // Set the attacker’s client ID
         //hitbox = Weapon.GetComponentInChildren<Hitbox>().gameObject;
+
+        // Register cooldowns
+        CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Dodge", () => onDodgeCooldownStarted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Frozen", () => onFrozenCooldownStarted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Attack Duration", () => onAttackDurationStarted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Combo Window", () => onComboWindowStarted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Hit", () => onHitStarted?.Invoke());
+
+        // Register cooldowns
+        CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Dodge", () => onDodgeCooldownCompleted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Frozen", () => onFrozenCooldownCompleted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Attack Duration", () => onAttackDurationCompleted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Combo Window", () => onComboWindowCompleted?.Invoke());
+        CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Hit", () => onHitCompleted?.Invoke());
     }
 
     public override void OnDestroy()
@@ -65,11 +97,27 @@ public class Player : NetworkEntity
 
         inputHandler.onMoveInput -= SetMoveInput;
         inputHandler.Dispose();
+
+        CooldownHandler.Dispose();
     }
 
     void Update()
     {
         if (!IsOwner) return;
+
+        SetPlayerUIRpc(username);
+        if (nameUI != null && Camera.main != null)
+        {
+            // Get direction to camera
+            Vector3 direction = nameUI.transform.position - Camera.main.transform.position;
+
+            // Keep the UI upright by zeroing out the Y component (so it doesn't rotate weirdly)
+            direction.y = 0;
+
+            // Apply rotation while maintaining a slight tilt toward the camera
+            Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(15f, 0f, 0f); // Adjust tilt angle as needed
+            MoveUIRpc(targetRotation);
+        }
 
         CurrentState.Update();
     }
@@ -137,7 +185,6 @@ public class Player : NetworkEntity
     [Rpc(SendTo.Everyone)]
     public void DisablePlayerRpc()
     {
-        CooldownHandler.enabled = false;
         enabled = false;
     }
 
@@ -150,5 +197,19 @@ public class Player : NetworkEntity
 
         Debug.Log($"Client {clientId} set their username to {username}");
         // Store the username for this client in a dictionary (optional)
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void SetPlayerUIRpc(string username)
+    {
+        nameUI.GetComponentInChildren<TMP_Text>().text = username;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void MoveUIRpc(Quaternion targetRotation)
+    {
+        if (nameUI.transform == null) return;
+
+        nameUI.transform.rotation = targetRotation;
     }
 }

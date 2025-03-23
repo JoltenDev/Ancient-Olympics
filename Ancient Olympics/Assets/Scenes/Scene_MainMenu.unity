@@ -3876,6 +3876,14 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 337981836145600457, guid: df4a73ad697a64845a2ade0df667053e, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 337981836145600457, guid: df4a73ad697a64845a2ade0df667053e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1160934366969071610, guid: df4a73ad697a64845a2ade0df667053e, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -4008,7 +4016,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  lobbyMenu: {fileID: 7179587342603619510, guid: 8ecbf018d552c1f45b703afb5063a377, type: 3}
+  lobbyMenuPrefab: {fileID: 7179587342603619510, guid: 8ecbf018d552c1f45b703afb5063a377, type: 3}
 --- !u!1001 &731643167
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8851,7 +8859,7 @@ SceneRoots:
   - {fileID: 231934672}
   - {fileID: 703171781}
   - {fileID: 727771103}
-  - {fileID: 1115654861}
   - {fileID: 1262250152}
+  - {fileID: 1115654861}
   - {fileID: 2107673479}
   - {fileID: 722286166}
