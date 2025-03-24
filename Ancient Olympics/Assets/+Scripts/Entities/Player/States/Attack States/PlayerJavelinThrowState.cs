@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class PlayerMelee3State : PlayerBaseState
+public class PlayerJavelinThrowState : PlayerBaseState
 {
-    public PlayerMelee3State(Player player, PlayerStates states) : base(player, states)
+    public PlayerJavelinThrowState(Player player, PlayerStates states) : base(player, states)
     {
     }
 
@@ -10,9 +10,11 @@ public class PlayerMelee3State : PlayerBaseState
     {
         WeaponHandler.onSwingStarted?.Invoke();
 
-        ActionEvent.onAnimatorCrossFade?.Invoke("melee3", 0.25f);
-        player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
+        ActionEvent.onAnimatorCrossFade?.Invoke("throw", 0.25f);
 
+        player.WeaponHandler.EquippedWeapon.GetComponent<HomingJavelin>().FindTarget();
+
+        player.CooldownHandler.StartTimer("Attack Duration", .25f);
         player.onAttackDurationCompleted += SwitchState;
     }
 
@@ -25,15 +27,14 @@ public class PlayerMelee3State : PlayerBaseState
     {
 
     }
-
+    
     public override void Exit()
     {
         WeaponHandler.onSwingCompleted?.Invoke();
-        player.onAttackDurationCompleted -= SwitchState;
     }
 
     void SwitchState()
     {
-        SwitchState(states.Frozen(.25f));
+        SwitchState(states.Idle());
     }
 }

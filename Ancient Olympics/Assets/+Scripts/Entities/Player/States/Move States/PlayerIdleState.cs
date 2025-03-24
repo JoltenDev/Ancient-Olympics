@@ -1,3 +1,4 @@
+using UnityEditor.Build;
 using UnityEngine;
 
 public class PlayerIdleState : PlayerBaseState
@@ -35,6 +36,16 @@ public class PlayerIdleState : PlayerBaseState
     void SwitchState(string input)
     {
         if (input == "Attack")
-            SwitchState(states.Melee1());
+        {
+            switch (player.WeaponHandler.WeaponData?.attackType)
+            {
+                case AttackType.MeleeSword:
+                    SwitchState(states.Melee1());
+                    break;
+                case AttackType.Throw:
+                    SwitchState(states.JavelinThrow());
+                    break;
+            }
+        }
     }
 }

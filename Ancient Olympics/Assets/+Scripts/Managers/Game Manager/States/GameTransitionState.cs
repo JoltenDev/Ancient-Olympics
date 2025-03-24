@@ -4,7 +4,6 @@ using Unity.Netcode;
 public class GameTransitionState : GameBaseState
 {
     enum Modes { Jousting, Assassination, SwordFighting, JavelinThrowing}
-    Modes gameModes;
 
     public GameTransitionState(GameManager gameManager, GameStates states) : base(gameManager, states)
     {
@@ -22,6 +21,7 @@ public class GameTransitionState : GameBaseState
         UIManager.Instance.ActivateGlobalMessageRpc(); // Activate global message ui
 
         gameManager.Timer.StartTimer("Transition", 5); // Start timer til gamemode starts
+        gameManager.onTransitionCompleted += SelectGameMode;
     }
 
     public override void Update()
@@ -29,7 +29,7 @@ public class GameTransitionState : GameBaseState
         if (gameManager.Timer.timerRemainingTimes.ContainsKey("Transition"))
         {
             float time = gameManager.Timer.timerRemainingTimes["Transition"];
-            UIManager.Instance.UpdatePlayerTimersRpc(time);
+            UIManager.Instance.UpdatePlayerTimersRpc($"Selecting Game... {time:F1}s");
         }
     }
 
@@ -39,20 +39,16 @@ public class GameTransitionState : GameBaseState
 
     public override void Exit()
     {
-        UIManager.Instance.DeactivateGlobalMessageRpc();
     }
 
     void SelectGameMode()
     {
-        switch (gameModes)
+        var mode = (Modes) Random.Range(3, 3);
+
+        switch (mode)
         {
-            case Modes.Jousting:
-                break;
-            case Modes.Assassination:
-                break;
             case Modes.JavelinThrowing:
-                break;
-            case Modes.SwordFighting:
+                SwitchState(states.GameJavelinThrowState());
                 break;
         }
     }

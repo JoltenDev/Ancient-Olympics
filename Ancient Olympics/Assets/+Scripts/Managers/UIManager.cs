@@ -36,11 +36,11 @@ public class UIManager : Singleton<UIManager>
     }
 
     [Rpc(SendTo.Everyone)]
-    public void UpdatePlayerTimersRpc(float time)
+    public void UpdatePlayerTimersRpc(string text)
     {
         if (Hud != null)
         {
-            Hud.GetComponent<HudItems>().globalMessage.GetComponentInChildren<TMP_Text>().text = $"Time Left: {time:F1}s";
+            Hud.GetComponent<HudItems>().globalMessage.GetComponentInChildren<TMP_Text>().text = text;
         }
     }
 

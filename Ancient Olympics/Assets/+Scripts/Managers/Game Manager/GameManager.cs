@@ -16,6 +16,8 @@ public class GameManager : Singleton<GameManager>
 
     public Action onTransitionStarted;
     public Action onTransitionCompleted;
+    public Action onGameStartingStarted;
+    public Action onGameStartingCompleted;
 
     void Start()
     {
@@ -23,6 +25,8 @@ public class GameManager : Singleton<GameManager>
 
         Timer.RegisterTimer(Timer.timerStartedEvents, "Transition", () => { onTransitionStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Transition", () => { onTransitionCompleted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerStartedEvents, "GameStarting", () => { onGameStartingStarted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerCompletedEvents, "GameStarting", () => { onGameStartingCompleted?.Invoke(); });
     }
 
     void Update()

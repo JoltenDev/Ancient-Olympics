@@ -10,7 +10,7 @@ public class PlayerMelee2State : PlayerBaseState
 
     public override void Enter()
     {
-        ActionEvent.onSwingStarted?.Invoke();
+        WeaponHandler.onSwingStarted?.Invoke();
 
         ActionEvent.onAnimatorCrossFade?.Invoke("melee2", 0.25f);
         player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
@@ -33,7 +33,7 @@ public class PlayerMelee2State : PlayerBaseState
 
     public override void Exit()
     {
-        ActionEvent.onSwingCompleted?.Invoke();
+        WeaponHandler.onSwingCompleted?.Invoke();
 
         player.InputHandler.onAttackInput -= SwitchToNextAttack;
         player.onAttackDurationCompleted -= ResetState;

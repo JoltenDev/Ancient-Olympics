@@ -10,8 +10,6 @@ public static class ActionEvent
 
     // Player Actions
     public static Action<float> onHealthChanged;
-    public static Action onSwingStarted;
-    public static Action onSwingCompleted;
     public static Action<float> onDamage;
     public static Action<float> onHeal;
     public static Action onDeath;

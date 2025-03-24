@@ -5,11 +5,15 @@ using System;
 
 public class Player : NetworkEntity
 {
+    [Header("Player Information")]
     [SerializeField] string username;
-    [SerializeField] GameObject weapon;
+    [SerializeField] WeaponHandler weaponHandler;
+
+    [Header("UI Elements")]
     [SerializeField] GameObject nameUI;
     [SerializeField] GameObject hud;
 
+    [Header("Player Data")]
     [SerializeField] StandardData data;
     [SerializeField] NetworkHealth health;
 
@@ -23,6 +27,7 @@ public class Player : NetworkEntity
     float dodgeStrength = 10f;
 
     public string Username { get => username; }
+    public WeaponHandler WeaponHandler { get => weaponHandler; }
     public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
     public PlayerInputHandler InputHandler { get => inputHandler; }
     public Timer CooldownHandler { get => cooldownHandler; }
@@ -53,23 +58,16 @@ public class Player : NetworkEntity
         if (!IsOwner) return;
 
         SendUsernameRpc(NetworkAccount.Username);
-        UIManager.Instance.Hud = hud;
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.Hud = hud;
 
         states = new PlayerStates(this);
         CurrentState = states.Idle();
         CurrentState.Enter();
 
-        //localHud = Instantiate(defaultPlayerHud);
-
-        ActionEvent.onHealthChanged += UpdateHud;
-        //ActionEvent.onSwingStarted += ActivateHitbox;
-        //ActionEvent.onSwingCompleted += DeactivateHitbox;
-
         inputHandler.Initialize();
         inputHandler.onMoveInput += SetMoveInput;
-
-        //Weapon.GetComponentInChildren<Hitbox>().SetOwner(OwnerClientId); // Set the attacker’s client ID
-        //hitbox = Weapon.GetComponentInChildren<Hitbox>().gameObject;
 
         // Register cooldowns
         CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Dodge", () => onDodgeCooldownStarted?.Invoke());
@@ -90,11 +88,6 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
-        //Destroy(localHud);
-        ActionEvent.onHealthChanged -= UpdateHud;
-        //ActionEvent.onSwingStarted -= ActivateHitbox;
-        //ActionEvent.onSwingCompleted -= DeactivateHitbox;
-
         inputHandler.onMoveInput -= SetMoveInput;
         inputHandler.Dispose();
 
@@ -106,18 +99,7 @@ public class Player : NetworkEntity
         if (!IsOwner) return;
 
         SetPlayerUIRpc(username);
-        if (nameUI != null && Camera.main != null)
-        {
-            // Get direction to camera
-            Vector3 direction = nameUI.transform.position - Camera.main.transform.position;
-
-            // Keep the UI upright by zeroing out the Y component (so it doesn't rotate weirdly)
-            direction.y = 0;
-
-            // Apply rotation while maintaining a slight tilt toward the camera
-            Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(15f, 0f, 0f); // Adjust tilt angle as needed
-            MoveUIRpc(targetRotation);
-        }
+        RotateUI();
 
         CurrentState.Update();
     }
@@ -135,9 +117,6 @@ public class Player : NetworkEntity
 
     [Rpc(SendTo.Everyone)]
     public void PlayerHitRpc() => CurrentState?.SwitchState(states?.Hit());
-
-    //void ActivateHitbox() => hitbox.SetActive(true);
-    //void DeactivateHitbox() => hitbox.SetActive(false);
 
     /// <summary>
     /// Rotates player towards the mouse position in world space
@@ -157,6 +136,22 @@ public class Player : NetworkEntity
         }
     }
 
+    void RotateUI()
+    {
+        if (nameUI != null && Camera.main != null)
+        {
+            // Get direction to camera
+            Vector3 direction = nameUI.transform.position - Camera.main.transform.position;
+
+            // Keep the UI upright by zeroing out the Y component (so it doesn't rotate weirdly)
+            direction.y = 0;
+
+            // Apply rotation while maintaining a slight tilt toward the camera
+            Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(15f, 0f, 0f); // Adjust tilt angle as needed
+            MoveUIRpc(targetRotation);
+        }
+    }
+
     [Rpc(SendTo.Server)]
     public void SendDodgeRpc(Vector3 direction, Vector3 forward, Vector3 right)
     {
@@ -170,16 +165,6 @@ public class Player : NetworkEntity
         rigidBody.AddForce(dodgeDirection * dodgeStrength, ForceMode.Impulse);
 
         SyncPositionRpc(rigidBody.position);
-    }
-
-    void UpdateHud(float currentHealth)
-    {
-        /*
-        if (!IsOwner) return;
-        if (localHud == null) return;
-
-        localHud.GetComponentInChildren<TMP_Text>().text = $"Health: {currentHealth}";
-        */
     }
 
     [Rpc(SendTo.Everyone)]

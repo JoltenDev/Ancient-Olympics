@@ -30,7 +30,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         //SetHostIP();
         NetworkManager.Singleton.StartHost();
 
-        if (NetworkManager.Singleton.IsServer)
+        if (NetworkManager.Singleton.IsServer && GameManager.Instance != null)
         {
             GameManager.Instance.SwitchState(GameManager.Instance.States.GameLobbyState());
             OnPlayerCountChanged += UIManager.Instance.UpdateLobbyUI;

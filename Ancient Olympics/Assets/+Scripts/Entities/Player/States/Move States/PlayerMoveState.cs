@@ -47,7 +47,17 @@ public class PlayerMoveState : PlayerBaseState
     void SwitchState(string input)
     {
         if (input == "Attack")
-            SwitchState(states.Melee1());
+        {
+            switch (player.WeaponHandler.WeaponData?.attackType)
+            {
+                case AttackType.MeleeSword:
+                    SwitchState(states.Melee1());
+                    break;
+                case AttackType.Throw:
+                    SwitchState(states.JavelinThrow());
+                    break;
+            }
+        }
 
         if (input == "Dodge")
             SwitchState(states.Dodge());
