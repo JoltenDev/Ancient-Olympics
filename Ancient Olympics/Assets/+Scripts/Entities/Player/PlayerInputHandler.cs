@@ -1,5 +1,4 @@
 ﻿using System;
-using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerInputHandler
@@ -8,6 +7,7 @@ public class PlayerInputHandler
     public event Action<Vector2> onMoveInput;
     public event Action<string> onDodgeInput;
     public event Action<string> onAttackInput;
+    public event Action<string> onCatchInput;
 
     public void Initialize()
     {
@@ -20,6 +20,7 @@ public class PlayerInputHandler
 
         controls.Player.OnSpace.performed += ctx => onDodgeInput?.Invoke("Dodge");
         controls.Player.OnLeftClick.performed += ctx => onAttackInput?.Invoke("Attack");
+        controls.Player.OnRightClick.performed += ctx => onCatchInput?.Invoke("Catch");
 
         controls.Enable();
     }

@@ -93,7 +93,7 @@ public class Player : NetworkEntity
 
         CooldownHandler.Dispose();
     }
-
+    
     void Update()
     {
         if (!IsOwner) return;
@@ -114,9 +114,6 @@ public class Player : NetworkEntity
     }
 
     void SetMoveInput(Vector2 input) => moveInput = input;
-
-    [Rpc(SendTo.Everyone)]
-    public void PlayerHitRpc() => CurrentState?.SwitchState(states?.Hit());
 
     /// <summary>
     /// Rotates player towards the mouse position in world space
@@ -167,12 +164,40 @@ public class Player : NetworkEntity
         SyncPositionRpc(rigidBody.position);
     }
 
+    [Rpc(SendTo.Server)]
+    public void SpawnJavelinProjectileRpc(ulong clientID, Vector3 position, Vector3 direction)
+    {
+        GameObject projectilePrefab = WeaponHandler.projectiles[0];
+
+        Vector3 spawnPos = new Vector3(position.x, 0.4f, position.z);
+        Quaternion spawnRot = Quaternion.LookRotation(direction, Vector3.up);
+
+        GameObject projectileInstance = Instantiate(projectilePrefab, spawnPos, spawnRot); // Instantiate Projectile
+        projectileInstance.GetComponentInChildren<Hitbox>().SetOwner(OwnerClientId); // Set attacker to this client
+
+        NetworkObject networkObj = projectileInstance.GetComponent<NetworkObject>();
+        networkObj.Spawn(); // Spawn Projectile
+
+        projectileInstance.GetComponent<HomingJavelin>().target = NetworkManager.Singleton.ConnectedClients[clientID].PlayerObject.transform; // Target other client
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void SendIdleRpc() => CurrentState?.SwitchState(states?.Idle());
+
+    [Rpc(SendTo.Everyone)]
+    public void SendHitRpc() => CurrentState?.SwitchState(states?.Hit());
+
+    // On Death
+    [Rpc(SendTo.Everyone)]
+    public void SendDeathRpc() => CurrentState?.SwitchState(states?.Death());
+
     [Rpc(SendTo.Everyone)]
     public void DisablePlayerRpc()
     {
         enabled = false;
     }
 
+    // UI Elements
     [Rpc(SendTo.Everyone)]
     void SendUsernameRpc(string username, RpcParams rpcParams = default)
     {

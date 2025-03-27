@@ -10,6 +10,7 @@ public class PlayerIdleState : PlayerBaseState
     public override void Enter()
     {
         player.InputHandler.onAttackInput += SwitchState;
+        player.InputHandler.onCatchInput += SwitchState;
     }
 
     public override void Update()
@@ -25,6 +26,7 @@ public class PlayerIdleState : PlayerBaseState
     public override void Exit()
     {
         player.InputHandler.onAttackInput -= SwitchState;
+        player.InputHandler.onCatchInput -= SwitchState;
     }
 
     void SwitchState(Vector2 input)
@@ -47,5 +49,8 @@ public class PlayerIdleState : PlayerBaseState
                     break;
             }
         }
+
+        if (input == "Catch")
+            SwitchState(states.Catch());
     }
 }

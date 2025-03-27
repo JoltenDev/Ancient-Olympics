@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public class PlayerStates {
+public class PlayerStates
+{
     Player player;
 
     public PlayerStates(Player currentPlayer)
@@ -8,14 +9,15 @@ public class PlayerStates {
         player = currentPlayer;
     }
 
-    public PlayerBaseState Idle() { return new PlayerIdleState(player, this); }
-    public PlayerBaseState Move() { return new PlayerMoveState(player, this); }
-    public PlayerBaseState Dodge() { return new PlayerDodgeState(player, this); }
-    public PlayerBaseState Frozen(float time) { return new PlayerFrozenState(player, this, time); }
-    public PlayerBaseState Melee1() { return new PlayerMelee1State(player, this); }
-    public PlayerBaseState Melee2() { return new PlayerMelee2State(player, this); }
-    public PlayerBaseState Melee3() { return new PlayerMelee3State(player, this); }
-    public PlayerBaseState JavelinThrow() { return new PlayerJavelinThrowState(player, this); }
-    public PlayerBaseState Hit() { return new PlayerHitState(player, this); }
-    public PlayerBaseState Death() { return new PlayerDeathState(player, this); }
+    public PlayerBaseState Idle() => new PlayerIdleState(player, this);
+    public PlayerBaseState Move() => new PlayerMoveState(player, this);
+    public PlayerBaseState Dodge() => new PlayerDodgeState(player, this);
+    public PlayerBaseState Catch() => new PlayerCatchState(player, this);
+    public PlayerBaseState JavelinThrow() => new PlayerJavelinThrowState(player, this);
+    public PlayerBaseState Hit() => new PlayerHitState(player, this);
+    public PlayerBaseState Death() => new PlayerDeathState(player, this);
+    public PlayerBaseState Frozen(float time) => new PlayerFrozenState(player, this, time);
+    public PlayerBaseState Melee1() => new PlayerMelee1State(player, this);
+    public PlayerBaseState Melee2() => new PlayerMelee2State(player, this);
+    public PlayerBaseState Melee3() => new PlayerMelee3State(player, this);
 }

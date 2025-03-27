@@ -20,6 +20,10 @@ public class GameTransitionState : GameBaseState
 
         UIManager.Instance.ActivateGlobalMessageRpc(); // Activate global message ui
 
+        if (GameManager.Instance.DeadPlayers.Count > 0)
+            GameManager.Instance.RevivePlayersRpc(); // Revive all players for next round
+        GameManager.Instance.DeadPlayers.Clear(); // Clear dead players
+
         gameManager.Timer.StartTimer("Transition", 5); // Start timer til gamemode starts
         gameManager.onTransitionCompleted += SelectGameMode;
     }

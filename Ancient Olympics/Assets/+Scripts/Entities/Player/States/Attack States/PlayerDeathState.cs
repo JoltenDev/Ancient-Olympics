@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerDeathState : PlayerBaseState
@@ -9,7 +10,7 @@ public class PlayerDeathState : PlayerBaseState
     public override void Enter()
     {
         ActionEvent.onAnimatorCrossFade?.Invoke("death", 0.25f); // Start Death animation
-        ActionEvent.onDeath?.Invoke();
+        SendDeath(player.OwnerClientId);
 
         player.InputHandler.BlockInput();
         player.DisablePlayerRpc();
@@ -34,5 +35,13 @@ public class PlayerDeathState : PlayerBaseState
 
     void SwitchState()
     {
+    }
+
+    [Rpc(SendTo.Server)]
+    void SendDeath(ulong id)
+    {
+        if (!player.IsServer) return;
+        
+        GameManager.Instance.DeadPlayers?.Add(id);
     }
 }

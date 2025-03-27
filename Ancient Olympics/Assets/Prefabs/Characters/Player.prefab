@@ -285,8 +285,8 @@ MonoBehaviour:
   weapons:
   - {fileID: 11400000, guid: 979ceb33006d4454dbde1dcd03ab607f, type: 2}
   - {fileID: 11400000, guid: 434ab554fbf927d4786d6cff7f3666de, type: 2}
-  equippedWeaponIndex:
-    m_InternalValue: 0
+  projectiles:
+  - {fileID: 4229522269649368439, guid: ea09958e4a6a8fe418bbae7b459fe56b, type: 3}
 --- !u!1001 &2888494429614821035
 PrefabInstance:
   m_ObjectHideFlags: 0

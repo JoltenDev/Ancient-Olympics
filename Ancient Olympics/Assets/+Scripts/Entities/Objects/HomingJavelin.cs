@@ -1,42 +1,41 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class HomingJavelin : NetworkBehaviour
+public class HomingJavelin : NetworkEntity
 {
     public Transform target;
-    public float speed = 10f;
 
     public override void OnNetworkSpawn()
     {
         if (!IsOwner) return; // Ensure only the owner moves it
     }
 
-    void Update()
+    public override void OnDestroy()
     {
-        if (!IsOwner || target == null) return;
-
-        TrackTarget();
-    }
-
-    public void FindTarget()
-    {
-        if (!IsOwner) return; // Only the owner should set the target
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+        if (target != null)
         {
-            if (hit.collider.CompareTag("Player"))
+            if (target.GetComponentInChildren<NetworkHealth>().Immune)
             {
-                target = hit.collider.transform;
-                transform.parent = null;
-                TrackTarget();
+                target.GetComponentInChildren<WeaponHandler>().EquipWeaponClientRpc(1);
             }
         }
     }
 
-    void TrackTarget()
+    void FixedUpdate()
     {
+        if (!IsOwner || target == null) return;
+
         Vector3 direction = (target.position - transform.position).normalized;
-        transform.position += direction * speed * Time.deltaTime;
+
+        float distance = Vector3.Distance(transform.position, target.position);
+        float stoppingDistance = 1.3f;
+
+        if (distance > stoppingDistance)
+        {
+            // Move towards the target only if outside stopping range
+            SendMove(direction, transform.position);
+        }
+
+        SendRotation(direction);
     }
 }

@@ -3,8 +3,15 @@ using UnityEngine;
 
 public class Hitbox : MonoBehaviour
 {
-    private ulong ownerClientId; // Store the owner ID (the attacker)
+    [Header("Damage Inflicted")]
+    [SerializeField] float damage;
 
+    [Header("Attacker's ID (Set when activated)")]
+    [SerializeField] ulong ownerClientId; // Store the owner ID (the attacker)
+
+    [Header("Destroy this object on hit?")]
+    [SerializeField] bool destroyOnHit;
+    
     public void SetOwner(ulong clientId)
     {
         ownerClientId = clientId; // Assign the attacker's ID when the hitbox is created
@@ -12,20 +19,26 @@ public class Hitbox : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.TryGetComponent<NetworkObject>(out NetworkObject networkObject))
         {
-            NetworkObject otherNetworkObject = other.GetComponent<NetworkObject>();
+            if (other.GetComponentInChildren<NetworkEntity>() == null) return; // If not entity, do nothing
 
-            if (otherNetworkObject != null && otherNetworkObject.OwnerClientId != ownerClientId)
+            if (networkObject.OwnerClientId != ownerClientId)
             {
-                Player player = other.GetComponent<Player>();
-                if (player.enabled)
-                {
-                    other.GetComponentInParent<Player>().PlayerHitRpc();
-                    other.GetComponentInParent<NetworkHealth>()?.SendDamageRpc(25);
-                    gameObject.SetActive(false);
-                }
+                if (other.GetComponent<NetworkHealth>().Dead) return; // If entity is dead, do nothing
+
+                other.GetComponentInParent<NetworkHealth>()?.SendDamageRpc(damage, networkObject.OwnerClientId);
+
+                gameObject.SetActive(false);
+                if (destroyOnHit)
+                    DestroyProjectile();
             }
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    void DestroyProjectile()
+    {
+        NetworkObject.Destroy(transform.parent.parent.gameObject);
     }
 }

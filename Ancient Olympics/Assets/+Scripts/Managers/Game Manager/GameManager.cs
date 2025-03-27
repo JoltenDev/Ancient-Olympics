@@ -3,6 +3,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using System;
 using TMPro;
+using System.Collections.Generic;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -19,14 +20,17 @@ public class GameManager : Singleton<GameManager>
     public Action onGameStartingStarted;
     public Action onGameStartingCompleted;
 
+    [SerializeField] List<ulong> deadPlayers = new List<ulong>();
+    public List<ulong> DeadPlayers { get => deadPlayers; set => deadPlayers = value; }
+
     void Start()
     {
         states = new GameStates(this);
 
         Timer.RegisterTimer(Timer.timerStartedEvents, "Transition", () => { onTransitionStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Transition", () => { onTransitionCompleted?.Invoke(); });
-        Timer.RegisterTimer(Timer.timerStartedEvents, "GameStarting", () => { onGameStartingStarted?.Invoke(); });
-        Timer.RegisterTimer(Timer.timerCompletedEvents, "GameStarting", () => { onGameStartingCompleted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerStartedEvents, "Game Starting", () => { onGameStartingStarted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerCompletedEvents, "Game Starting", () => { onGameStartingCompleted?.Invoke(); });
     }
 
     void Update()
@@ -56,6 +60,23 @@ public class GameManager : Singleton<GameManager>
             var playerObject = NetworkLobbyManager.Instance.playersInServer[player];
             var currentScale = playerObject.transform.localScale;
             playerObject.GetComponent<NetworkTransform>().Teleport(spawnPos, Quaternion.identity, currentScale);
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void RevivePlayersRpc()
+    {
+        if (!IsServer) return;
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClients.Values)
+        {
+            var player = client.PlayerObject.GetComponentInChildren<Player>();
+            var health = client.PlayerObject.GetComponentInChildren<NetworkHealth>();
+
+            player.enabled = true;
+            player.SendIdleRpc();
+            health.SendHealRpc(health.MaxHealth);
+            health.Dead = false;
         }
     }
 

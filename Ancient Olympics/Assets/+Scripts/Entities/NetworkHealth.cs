@@ -5,6 +5,13 @@ public class NetworkHealth : NetworkBehaviour
 {
     [SerializeField] float maxHealth = 100f;
     [SerializeField] NetworkVariable<float> currentHealth = new NetworkVariable<float>();
+    
+    bool immune;
+    bool dead;
+
+    public bool Immune { get => immune; set => immune = value; }
+    public bool Dead { get => dead; set => dead = value; }
+    public float MaxHealth { get => maxHealth; }
     public NetworkVariable<float> CurrentHealth { get { return currentHealth; } }
 
     public override void OnNetworkSpawn()
@@ -13,44 +20,24 @@ public class NetworkHealth : NetworkBehaviour
 
         SendHealRpc(maxHealth);
 
-        ActionEvent.onDamage += Damage;
-        ActionEvent.onHeal += Heal;
-
         currentHealth.OnValueChanged += (oldHealth, newHealth) =>
         {
             ActionEvent.onHealthChanged?.Invoke(newHealth);
         };
-    }
 
-    public override void OnDestroy()
-    {
-        if (!IsOwner) return;
-
-        ActionEvent.onDamage -= Damage;
-        ActionEvent.onHeal -= Heal;
-    }
-
-    public void Damage(float amount)
-    {
-        if (!IsOwner) return;
-
-        SendDamageRpc(amount);
-    }
-
-    public void Heal(float amount)
-    {
-        if (!IsOwner) return;
-        
-        SendHealRpc(amount);
+        dead = false;
     }
 
     [Rpc(SendTo.Server)]
-    public void SendDamageRpc(float amount)
+    public void SendDamageRpc(float amount, ulong id)
     {
         if (!IsServer) return;
+        if (immune) return;
+
+        if (NetworkManager.Singleton.ConnectedClients[id].PlayerObject.TryGetComponent<Player>(out Player player)) player.SendHitRpc();
 
         currentHealth.Value = Mathf.Max(currentHealth.Value - amount, 0);
-        CheckDeath();
+        CheckDeath(id);
     }
 
     [Rpc(SendTo.Server)]
@@ -61,11 +48,12 @@ public class NetworkHealth : NetworkBehaviour
         currentHealth.Value = Mathf.Min(currentHealth.Value + amount, maxHealth);
     }
 
-    void CheckDeath()
+    void CheckDeath(ulong id)
     {
         if (currentHealth.Value <= 0)
         {
-            ActionEvent.onDeath?.Invoke();
+            if (NetworkManager.Singleton.ConnectedClients[id].PlayerObject.TryGetComponent<Player>(out Player player)) player.SendDeathRpc();
+            dead = true;
         }
     }
 }

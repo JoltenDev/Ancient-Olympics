@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerJavelinThrowState : PlayerBaseState
@@ -12,9 +13,7 @@ public class PlayerJavelinThrowState : PlayerBaseState
 
         ActionEvent.onAnimatorCrossFade?.Invoke("throw", 0.25f);
 
-        player.WeaponHandler.EquippedWeapon.GetComponent<HomingJavelin>().FindTarget();
-
-        player.CooldownHandler.StartTimer("Attack Duration", .25f);
+        player.CooldownHandler.StartTimer("Attack Duration", .5f);
         player.onAttackDurationCompleted += SwitchState;
     }
 
@@ -30,11 +29,39 @@ public class PlayerJavelinThrowState : PlayerBaseState
     
     public override void Exit()
     {
+        if (FindTarget() != 100)
+        {
+            RequestSpawnJavelinProjectile(FindTarget());
+            player.WeaponHandler.UnequipWeaponRpc();
+        }
+
+        player.onAttackDurationCompleted -= SwitchState;
         WeaponHandler.onSwingCompleted?.Invoke();
     }
 
     void SwitchState()
     {
         SwitchState(states.Idle());
+    }
+
+    void RequestSpawnJavelinProjectile(ulong clientID)
+    {
+        player.SpawnJavelinProjectileRpc(clientID, player.transform.position, player.transform.forward);
+    }
+
+    ulong FindTarget()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+        {
+            if (hit.collider.CompareTag("Player"))
+            {
+                if (!hit.collider.GetComponent<Player>().enabled) return 100;
+
+                return hit.collider.GetComponentInChildren<NetworkObject>().OwnerClientId;
+            }
+        }
+
+        return 100;
     }
 }

@@ -15,6 +15,7 @@ public class PlayerMoveState : PlayerBaseState
 
         player.InputHandler.onDodgeInput += SwitchState; // Subscribe dodge input to switch to dodge state
         player.InputHandler.onAttackInput += SwitchState;
+        player.InputHandler.onCatchInput += SwitchState;
     }
 
     public override void Update()
@@ -34,6 +35,7 @@ public class PlayerMoveState : PlayerBaseState
     {
         player.InputHandler.onDodgeInput -= SwitchState;
         player.InputHandler.onAttackInput -= SwitchState;
+        player.InputHandler.onCatchInput -= SwitchState;
 
         ActionEvent.onAnimatorSetBool?.Invoke("IsMoving", false); // Stop move animation
     }
@@ -61,5 +63,8 @@ public class PlayerMoveState : PlayerBaseState
 
         if (input == "Dodge")
             SwitchState(states.Dodge());
+
+        if (input == "Catch")
+            SwitchState(states.Catch());
     }
 }

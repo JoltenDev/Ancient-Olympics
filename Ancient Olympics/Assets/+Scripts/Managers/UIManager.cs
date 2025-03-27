@@ -20,18 +20,18 @@ public class UIManager : Singleton<UIManager>
                 LobbyMenu = Instantiate(lobbyMenuPrefab);
                 LobbyMenu?.SetActive(true);  // Set the clone active, not the original one
                 DontDestroyOnLoad(LobbyMenu);
+
+                LobbyMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
+                {
+                    if (NetworkLobbyManager.Instance.PlayerCount < 2) return;
+
+                    GameManager.Instance.SwitchState(GameManager.Instance.States.GameTransitionState());
+                    LobbyMenu.SetActive(false);
+                });
             }
 
             string canStart = playerCount > 1 ? "#59B359" : "#F85A5D";
             LobbyMenu.GetComponentInChildren<TMP_Text>().text = $"Start <color={canStart}>[{playerCount}/4]</color>";
-
-            LobbyMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate 
-            {
-                if (NetworkLobbyManager.Instance.PlayerCount < 2) return;
-
-                GameManager.Instance.SwitchState(GameManager.Instance.States.GameTransitionState());
-                LobbyMenu.SetActive(false);
-            });
         }
     }
 

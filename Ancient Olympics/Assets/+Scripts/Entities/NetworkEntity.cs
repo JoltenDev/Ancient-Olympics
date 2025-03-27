@@ -7,6 +7,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     [Header("Entity Fields")]
     [SerializeField] protected Rigidbody rigidBody;
     [SerializeField] protected float speed = 15f;
+    [SerializeField] protected float rotationSpeed = 5f;
 
     /// <summary>
     /// Sends movement input from the client to the server for synchronization.
@@ -74,6 +75,6 @@ public abstract class NetworkEntity : NetworkBehaviour
     public void SyncRotationRpc(Quaternion syncedRotation)
     {
         if (!IsOwner)
-            rigidBody.rotation = Quaternion.Slerp(rigidBody.rotation, syncedRotation, 5f * Time.fixedDeltaTime);
+            rigidBody.rotation = Quaternion.Slerp(rigidBody.rotation, syncedRotation, rotationSpeed * Time.fixedDeltaTime);
     }
 }
