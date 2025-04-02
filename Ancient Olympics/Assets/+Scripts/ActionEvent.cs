@@ -10,8 +10,4 @@ public static class ActionEvent
 
     // Player Actions
     public static Action<float> onHealthChanged;
-
-    // Animator Actions
-    public static Action<string, bool> onAnimatorSetBool;
-    public static Action<string, float> onAnimatorCrossFade;
 }

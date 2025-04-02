@@ -27,7 +27,7 @@ public class GameJavelinThrowState : GameBaseState
                 UIManager.Instance.UpdatePlayerTimersRpc($"<color=#ff6666>Javelin Throwing <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
         }
 
-        SwitchState();
+        SwitchState(); // Switch state if only 1 player is alive
     }
 
     public override void FixedUpdate()
@@ -38,14 +38,15 @@ public class GameJavelinThrowState : GameBaseState
     {
         gameManager.onGameStartingCompleted -= BeginGame;
 
-        UIManager.Instance.UpdatePlayerTimersRpc($"{alivePlayerId} has won the round!"); // Update Message
+        Player player = NetworkManager.Singleton.ConnectedClients[alivePlayerId].PlayerObject.GetComponentInChildren<Player>();
+        UIManager.Instance.UpdatePlayerTimersRpc($"<color=#59dac9>{player.Username} <color=#ffffff>has won the round!"); // Update Message
     }
 
     void BeginGame()
     {
         UIManager.Instance.UpdatePlayerTimersRpc($"Begin!"); // Update Message
 
-        RandomClient().PlayerObject.GetComponent<WeaponHandler>().EquipWeaponClientRpc(1);
+        RandomClient().PlayerObject.GetComponent<WeaponHandler>().EquipWeaponClientRpc(2);
     }
 
     void SwitchState()

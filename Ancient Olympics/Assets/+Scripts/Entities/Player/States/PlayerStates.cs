@@ -17,6 +17,7 @@ public class PlayerStates
     public PlayerBaseState Hit() => new PlayerHitState(player, this);
     public PlayerBaseState Death() => new PlayerDeathState(player, this);
     public PlayerBaseState Frozen(float time) => new PlayerFrozenState(player, this, time);
+    public PlayerBaseState Swing() => new PlayerSwingState(player, this);
     public PlayerBaseState Melee1() => new PlayerMelee1State(player, this);
     public PlayerBaseState Melee2() => new PlayerMelee2State(player, this);
     public PlayerBaseState Melee3() => new PlayerMelee3State(player, this);

@@ -14,7 +14,7 @@ public class HomingJavelin : NetworkEntity
     {
         if (target != null)
         {
-            if (target.GetComponentInChildren<NetworkHealth>().Immune)
+            if (target.GetComponentInChildren<NetworkHealth>().Immune.Value)
             {
                 target.GetComponentInChildren<WeaponHandler>().EquipWeaponClientRpc(1);
             }

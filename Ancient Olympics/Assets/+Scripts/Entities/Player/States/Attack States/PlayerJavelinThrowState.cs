@@ -9,9 +9,9 @@ public class PlayerJavelinThrowState : PlayerBaseState
 
     public override void Enter()
     {
-        WeaponHandler.onSwingStarted?.Invoke();
+        player.WeaponHandler.onSwingStarted?.Invoke();
 
-        ActionEvent.onAnimatorCrossFade?.Invoke("throw", 0.25f);
+        player.onAnimatorCrossFade?.Invoke("throw", 0.25f);
 
         player.CooldownHandler.StartTimer("Attack Duration", .5f);
         player.onAttackDurationCompleted += SwitchState;
@@ -36,7 +36,7 @@ public class PlayerJavelinThrowState : PlayerBaseState
         }
 
         player.onAttackDurationCompleted -= SwitchState;
-        WeaponHandler.onSwingCompleted?.Invoke();
+        player.WeaponHandler.onSwingCompleted?.Invoke();
     }
 
     void SwitchState()

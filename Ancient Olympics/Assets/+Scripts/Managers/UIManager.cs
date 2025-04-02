@@ -25,7 +25,7 @@ public class UIManager : Singleton<UIManager>
                 {
                     if (NetworkLobbyManager.Instance.PlayerCount < 2) return;
 
-                    GameManager.Instance.SwitchState(GameManager.Instance.States.GameTransitionState());
+                    GameManager.Instance.SwitchState(GameManager.Instance.States.GameTransitionState(false));
                     LobbyMenu.SetActive(false);
                 });
             }

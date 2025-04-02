@@ -245,8 +245,10 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   rigidBody: {fileID: 8952246235399646411}
   speed: 15
+  rotationSpeed: 5
   username: 
   weaponHandler: {fileID: -2175480669571382647}
+  networkAnimatorSync: {fileID: 1160934366969071610}
   nameUI: {fileID: 3624283760543674516}
   hud: {fileID: 8956448911632464112}
   data: {fileID: 11400000, guid: 25c7f2b95a284554693a715d35bbddf7, type: 2}
@@ -284,6 +286,7 @@ MonoBehaviour:
   equippedWeapon: {fileID: 0}
   weapons:
   - {fileID: 11400000, guid: 979ceb33006d4454dbde1dcd03ab607f, type: 2}
+  - {fileID: 11400000, guid: c3dcf139618700a47b5a46f9838c4c67, type: 2}
   - {fileID: 11400000, guid: 434ab554fbf927d4786d6cff7f3666de, type: 2}
   projectiles:
   - {fileID: 4229522269649368439, guid: ea09958e4a6a8fe418bbae7b459fe56b, type: 3}
@@ -608,11 +611,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 445712794880070669, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 445712794880070669, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
       value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
       propertyPath: m_Name
       value: character-soldier
+      objectReference: {fileID: 0}
+    - target: {fileID: 1719107914459033713, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1812433027226884373, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 1812433027226884373, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -620,6 +635,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2479020134676697509, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2479020134676697509, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
       value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2479020134676697509, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
@@ -636,7 +655,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 13d1aa4b8baa1514e8d643ff114f4329, type: 2}
     - target: {fileID: 8407497435746616074, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8780691006778126227, guid: 3bb81e6e79943834ba56a8ad3a64e788, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

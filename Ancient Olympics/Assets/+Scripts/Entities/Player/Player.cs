@@ -5,9 +5,10 @@ using System;
 
 public class Player : NetworkEntity
 {
-    [Header("Player Information")]
+    [Header("Player Fields")]
     [SerializeField] string username;
     [SerializeField] WeaponHandler weaponHandler;
+    [SerializeField] NetworkAnimatorSync networkAnimatorSync;
 
     [Header("UI Elements")]
     [SerializeField] GameObject nameUI;
@@ -26,16 +27,20 @@ public class Player : NetworkEntity
     Vector2 moveInput;
     float dodgeStrength = 10f;
 
+    #region Getters/Setters
     public string Username { get => username; }
     public WeaponHandler WeaponHandler { get => weaponHandler; }
     public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
+    public PlayerStates States { get => states; }
     public PlayerInputHandler InputHandler { get => inputHandler; }
     public Timer CooldownHandler { get => cooldownHandler; }
     public NetworkHealth NetworkHealth { get => health; }
     public Texture2D DefaultTexture => data.defaultTexture;
     public Texture2D DeathTexture => data.deathTexture;
     public Vector2 MoveInput { get => moveInput; set => moveInput = value; }
+    #endregion
 
+    #region Actions
     public Action onDodgeCooldownStarted;
     public Action onFrozenCooldownStarted;
     public Action onAttackDurationStarted;
@@ -47,6 +52,10 @@ public class Player : NetworkEntity
     public Action onAttackDurationCompleted;
     public Action onComboWindowCompleted;
     public Action onHitCompleted;
+
+    public Action<string, bool> onAnimatorSetBool;
+    public Action<string, float> onAnimatorCrossFade;
+    #endregion
 
     void Start()
     {
@@ -82,6 +91,9 @@ public class Player : NetworkEntity
         CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Attack Duration", () => onAttackDurationCompleted?.Invoke());
         CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Combo Window", () => onComboWindowCompleted?.Invoke());
         CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Hit", () => onHitCompleted?.Invoke());
+
+        onAnimatorSetBool += networkAnimatorSync.AnimateSetBoolRpc;
+        onAnimatorCrossFade += networkAnimatorSync.AnimateCrossFadeRpc;
     }
 
     public override void OnDestroy()
@@ -92,6 +104,9 @@ public class Player : NetworkEntity
         inputHandler.Dispose();
 
         CooldownHandler.Dispose();
+
+        onAnimatorSetBool -= networkAnimatorSync.AnimateSetBoolRpc;
+        onAnimatorCrossFade -= networkAnimatorSync.AnimateCrossFadeRpc;
     }
     
     void Update()
@@ -149,6 +164,8 @@ public class Player : NetworkEntity
         }
     }
 
+    #region RPCs
+    #region Specifics
     [Rpc(SendTo.Server)]
     public void SendDodgeRpc(Vector3 direction, Vector3 forward, Vector3 right)
     {
@@ -180,24 +197,34 @@ public class Player : NetworkEntity
 
         projectileInstance.GetComponent<HomingJavelin>().target = NetworkManager.Singleton.ConnectedClients[clientID].PlayerObject.transform; // Target other client
     }
+    #endregion
 
+    #region States
     [Rpc(SendTo.Everyone)]
-    public void SendIdleRpc() => CurrentState?.SwitchState(states?.Idle());
+    public void IdleRpc() => CurrentState?.SwitchState(states?.Idle());
+    [Rpc(SendTo.Everyone)]
+    public void HitRpc() => CurrentState?.SwitchState(states?.Hit());
+    [Rpc(SendTo.Everyone)]
+    public void DeathRpc() => CurrentState?.SwitchState(states?.Death());
+    #endregion
 
+    #region Player
     [Rpc(SendTo.Everyone)]
-    public void SendHitRpc() => CurrentState?.SwitchState(states?.Hit());
-
-    // On Death
-    [Rpc(SendTo.Everyone)]
-    public void SendDeathRpc() => CurrentState?.SwitchState(states?.Death());
+    public void EnablePlayerRpc()
+    {
+        enabled = true;
+        InputHandler.UnblockInput();
+    }
 
     [Rpc(SendTo.Everyone)]
     public void DisablePlayerRpc()
     {
         enabled = false;
+        InputHandler.BlockInput();
     }
+    #endregion
 
-    // UI Elements
+    #region UI Elements
     [Rpc(SendTo.Everyone)]
     void SendUsernameRpc(string username, RpcParams rpcParams = default)
     {
@@ -222,4 +249,6 @@ public class Player : NetworkEntity
 
         nameUI.transform.rotation = targetRotation;
     }
+    #endregion
+    #endregion
 }

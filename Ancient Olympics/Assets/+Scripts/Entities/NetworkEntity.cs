@@ -38,7 +38,7 @@ public abstract class NetworkEntity : NetworkBehaviour
     /// <param name="functionName">The name of the RPC function to invoke.</param>
     /// <param name="data">The vector data for the function (movement direction or rotation target).</param>
     [Rpc(SendTo.Server)]
-    private void SendRpc(string functionName, Vector3 data, Vector3 currentPosition)
+    void SendRpc(string functionName, Vector3 data, Vector3 currentPosition)
     {
         if (IsServer)
         {

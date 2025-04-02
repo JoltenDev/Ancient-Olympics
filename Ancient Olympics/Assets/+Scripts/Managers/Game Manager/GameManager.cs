@@ -11,14 +11,18 @@ public class GameManager : Singleton<GameManager>
     GameBaseState currentState;
     Timer timer = new Timer();
 
-    public GameStates States { get { return states; } }
+    public GameStates States { get => states; }
     public GameBaseState CurrentState { get => currentState; set => currentState = value; }
-    public Timer Timer { get { return timer; } }
+    public Timer Timer { get => timer; }
 
-    public Action onTransitionStarted;
-    public Action onTransitionCompleted;
+    #region Actions
     public Action onGameStartingStarted;
     public Action onGameStartingCompleted;
+    public Action onTransitionStarted;
+    public Action onTransitionCompleted;
+    public Action onBuffferStarted;
+    public Action onBufferCompleted;
+    #endregion
 
     [SerializeField] List<ulong> deadPlayers = new List<ulong>();
     public List<ulong> DeadPlayers { get => deadPlayers; set => deadPlayers = value; }
@@ -27,10 +31,12 @@ public class GameManager : Singleton<GameManager>
     {
         states = new GameStates(this);
 
-        Timer.RegisterTimer(Timer.timerStartedEvents, "Transition", () => { onTransitionStarted?.Invoke(); });
-        Timer.RegisterTimer(Timer.timerCompletedEvents, "Transition", () => { onTransitionCompleted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerStartedEvents, "Game Starting", () => { onGameStartingStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Game Starting", () => { onGameStartingCompleted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerStartedEvents, "Transition", () => { onTransitionStarted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerCompletedEvents, "Transition", () => { onTransitionCompleted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerStartedEvents, "Buffer", () => { onBuffferStarted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerCompletedEvents, "Buffer", () => { onBufferCompleted?.Invoke(); });
     }
 
     void Update()
@@ -66,22 +72,23 @@ public class GameManager : Singleton<GameManager>
     [Rpc(SendTo.Server)]
     public void RevivePlayersRpc()
     {
-        if (!IsServer) return;
-
         foreach (var client in NetworkManager.Singleton.ConnectedClients.Values)
         {
             var player = client.PlayerObject.GetComponentInChildren<Player>();
             var health = client.PlayerObject.GetComponentInChildren<NetworkHealth>();
 
-            player.enabled = true;
-            player.SendIdleRpc();
+            player.EnablePlayerRpc();
+            player.IdleRpc();
             health.SendHealRpc(health.MaxHealth);
-            health.Dead = false;
+            health.Dead.Value = false;
         }
     }
 
-    public void ApplicationQuit() => Application.Quit();
+    [Rpc(SendTo.Server)]
+    public void AddPlayerToDeadListRpc(ulong id) => DeadPlayers.Add(id);
 
+    #region Quit
+    public void ApplicationQuit() => Application.Quit();
     void OnApplicationQuit()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
@@ -89,4 +96,5 @@ public class GameManager : Singleton<GameManager>
             NetworkManager.Singleton.Shutdown();
         }
     }
+    #endregion
 }

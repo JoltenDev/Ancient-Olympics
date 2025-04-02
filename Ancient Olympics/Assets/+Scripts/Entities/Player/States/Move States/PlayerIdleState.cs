@@ -1,4 +1,3 @@
-using UnityEditor.Build;
 using UnityEngine;
 
 public class PlayerIdleState : PlayerBaseState
@@ -43,6 +42,9 @@ public class PlayerIdleState : PlayerBaseState
             {
                 case AttackType.MeleeSword:
                     SwitchState(states.Melee1());
+                    break;
+                case AttackType.MeleeKnife:
+                    SwitchState(states.Swing());
                     break;
                 case AttackType.Throw:
                     SwitchState(states.JavelinThrow());

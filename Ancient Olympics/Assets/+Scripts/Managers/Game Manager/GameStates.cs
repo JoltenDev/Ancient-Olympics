@@ -10,6 +10,7 @@ public class GameStates
     }
 
     public GameBaseState GameLobbyState() { return new GameLobbyState(gameManager, this); }
-    public GameBaseState GameTransitionState() { return new GameTransitionState(gameManager, this); }
+    public GameBaseState GameTransitionState(bool transitionFromRounds = true) { return new GameTransitionState(gameManager, this, transitionFromRounds); }
     public GameBaseState GameJavelinThrowState() { return new GameJavelinThrowState(gameManager, this); }
+    public GameBaseState GameAssassinationState() { return new GameAssassinationState(gameManager, this); }
 }

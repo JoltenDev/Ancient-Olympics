@@ -9,7 +9,7 @@ public class PlayerDodgeState : PlayerBaseState
 
     public override void Enter()
     {
-        ActionEvent.onAnimatorCrossFade?.Invoke("dodge", .25f); // Invoke dodge animation
+        player.onAnimatorCrossFade?.Invoke("dodge", .25f); // Invoke dodge animation
 
         player.SendDodgeRpc(player.MoveInput, player.transform.forward, player.transform.right); // Send dodge to server
 
