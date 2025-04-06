@@ -2,14 +2,16 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using System;
-using TMPro;
 using System.Collections.Generic;
 
 public class GameManager : Singleton<GameManager>
 {
+    [SerializeField] GameObject npc;
+
     GameStates states;
     GameBaseState currentState;
     Timer timer = new Timer();
+    List<GameObject> spawnedNpcs = new List<GameObject>();
 
     public GameStates States { get => states; }
     public GameBaseState CurrentState { get => currentState; set => currentState = value; }
@@ -86,6 +88,36 @@ public class GameManager : Singleton<GameManager>
 
     [Rpc(SendTo.Server)]
     public void AddPlayerToDeadListRpc(ulong id) => DeadPlayers.Add(id);
+
+    [Rpc(SendTo.Server)]
+    public void SpawnNpcsRpc(int amount)
+    {
+        if (!IsServer) return;
+
+        for (int i = 0; i < amount; i++)
+        {
+            float spawn_x = UnityEngine.Random.Range(-3f, 3.25f);
+            float spawn_z = UnityEngine.Random.Range(-1.5f, 1.5f);
+            Vector3 spawnPos = new Vector3(spawn_x, 0.4f, spawn_z);
+
+            var clone = Instantiate(npc, spawnPos, Quaternion.identity);
+            clone.GetComponentInParent<NetworkObject>().Spawn();
+            spawnedNpcs.Add(clone);
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void DespawnAllNpcsRpc()
+    {
+        if (!IsServer) return;
+
+        foreach (var clone in spawnedNpcs) 
+        {
+            clone.GetComponentInParent<NetworkObject>().Despawn(true);
+        }
+
+        spawnedNpcs.Clear();
+    }
 
     #region Quit
     public void ApplicationQuit() => Application.Quit();

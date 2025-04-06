@@ -81,7 +81,7 @@ public class GameTransitionState : GameBaseState
 
     void SelectGameMode()
     {
-        var mode = (Modes) Random.Range(0, 1);
+        var mode = (Modes) Random.Range(0, 2);
 
         switch (mode)
         {

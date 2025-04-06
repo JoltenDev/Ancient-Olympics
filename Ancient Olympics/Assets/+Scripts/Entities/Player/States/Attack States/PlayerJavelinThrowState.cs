@@ -44,9 +44,9 @@ public class PlayerJavelinThrowState : PlayerBaseState
         SwitchState(states.Idle());
     }
 
-    void RequestSpawnJavelinProjectile(ulong clientID)
+    void RequestSpawnJavelinProjectile(ulong targetId)
     {
-        player.SpawnJavelinProjectileRpc(clientID, player.transform.position, player.transform.forward);
+        player.SpawnJavelinProjectileRpc(player.OwnerClientId, targetId, player.transform.position, player.transform.forward);
     }
 
     ulong FindTarget()

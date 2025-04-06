@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class WeaponHandler : NetworkBehaviour
@@ -22,8 +21,10 @@ public class WeaponHandler : NetworkBehaviour
     public Action onSwingCompleted;
 
     [Rpc(SendTo.Everyone)]
-    public void EquipWeaponClientRpc(int index)
+    public void EquipWeaponRpc(ulong id, int index, bool hidden = false)
     {
+        if (equippedWeapon != null) return;
+
         weaponData = weapons[index];
         if (weaponData == null) return;
 
@@ -31,12 +32,20 @@ public class WeaponHandler : NetworkBehaviour
 
         // Setup hitbox
         hitbox = equippedWeapon.GetComponentInChildren<Hitbox>();
-        hitbox.SetOwner(OwnerClientId);
         hitbox.gameObject.SetActive(false);
 
         // Assign events
         onSwingStarted += ActivateHitboxRpc;
         onSwingCompleted += DeactivateHitboxRpc;
+
+        if (hidden)
+            HideWeapon(id);
+    }
+
+    void HideWeapon(ulong id)
+    {
+        if (NetworkManager.LocalClientId == id) return;
+        equippedWeapon.SetActive(false);
     }
 
     [Rpc(SendTo.Everyone)]

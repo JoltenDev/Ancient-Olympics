@@ -12,7 +12,7 @@ public class NetworkHealth : NetworkBehaviour
 
     public float MaxHealth { get => maxHealth; }
     public NetworkVariable<float> CurrentHealth { get { return currentHealth; } }
-    public NetworkVariable<bool> Immune { get { return dead; } }
+    public NetworkVariable<bool> Immune { get { return immune; } }
     public NetworkVariable<bool> Dead { get { return dead; } }
 
     public override void OnNetworkSpawn()
@@ -56,5 +56,14 @@ public class NetworkHealth : NetworkBehaviour
                 player.DeathRpc();
             dead.Value = true;
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void SetImmunityRpc(ulong id, bool status)
+    {
+        if (!IsServer) return;
+
+        NetworkManager.Singleton.ConnectedClients[id].PlayerObject
+            .GetComponentInChildren<NetworkHealth>().Immune.Value = status;
     }
 }

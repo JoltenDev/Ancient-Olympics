@@ -10,7 +10,7 @@ public class PlayerCatchState : PlayerBaseState
     public override void Enter()
     {
         player.onAnimatorCrossFade?.Invoke("catch", 0.25f);
-        player.NetworkHealth.Immune.Value = true;
+        player.NetworkHealth.SetImmunityRpc(player.OwnerClientId, true);
 
         player.CooldownHandler.StartTimer("Attack Duration", .75f); // Catch for .75 seconds
         player.onAttackDurationCompleted += Freeze;
@@ -29,7 +29,7 @@ public class PlayerCatchState : PlayerBaseState
     public override void Exit()
     {
         player.onAttackDurationCompleted -= Freeze;
-        player.NetworkHealth.Immune.Value = false;
+        player.NetworkHealth.SetImmunityRpc(player.OwnerClientId, false);
     }
 
     void Freeze()

@@ -18,6 +18,9 @@ public class Player : NetworkEntity
     [SerializeField] StandardData data;
     [SerializeField] NetworkHealth health;
 
+    [Header("Extra")]
+    [SerializeField] GameObject horse;
+
     PlayerStates states;
     PlayerBaseState currentState;
     PlayerInputHandler inputHandler = new PlayerInputHandler();
@@ -33,6 +36,7 @@ public class Player : NetworkEntity
     public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
     public PlayerStates States { get => states; }
     public PlayerInputHandler InputHandler { get => inputHandler; }
+    public GameObject Horse { get => horse; }
     public Timer CooldownHandler { get => cooldownHandler; }
     public NetworkHealth NetworkHealth { get => health; }
     public Texture2D DefaultTexture => data.defaultTexture;
@@ -67,6 +71,7 @@ public class Player : NetworkEntity
         if (!IsOwner) return;
 
         SendUsernameRpc(NetworkAccount.Username);
+        SetPlayerUIRpc(username);
 
         if (UIManager.Instance != null)
             UIManager.Instance.Hud = hud;
@@ -113,7 +118,6 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
-        SetPlayerUIRpc(username);
         RotateUI();
 
         CurrentState.Update();
@@ -182,20 +186,43 @@ public class Player : NetworkEntity
     }
 
     [Rpc(SendTo.Server)]
-    public void SpawnJavelinProjectileRpc(ulong clientID, Vector3 position, Vector3 direction)
+    public void SpawnJavelinProjectileRpc(ulong ownerId, ulong targetId, Vector3 position, Vector3 direction)
     {
         GameObject projectilePrefab = WeaponHandler.projectiles[0];
 
-        Vector3 spawnPos = new Vector3(position.x, 0.4f, position.z);
+        Vector3 spawnPos = new Vector3(position.x, 0.2f, position.z);
         Quaternion spawnRot = Quaternion.LookRotation(direction, Vector3.up);
 
-        GameObject projectileInstance = Instantiate(projectilePrefab, spawnPos, spawnRot); // Instantiate Projectile
-        projectileInstance.GetComponentInChildren<Hitbox>().SetOwner(OwnerClientId); // Set attacker to this client
+        NetworkObject networkObj = projectilePrefab.GetComponent<NetworkObject>();
+        var clone = networkObj.InstantiateAndSpawn(NetworkManager.Singleton, ownerId, false, false, false, spawnPos, spawnRot);
 
-        NetworkObject networkObj = projectileInstance.GetComponent<NetworkObject>();
-        networkObj.Spawn(); // Spawn Projectile
+        clone.GetComponentInChildren<HomingJavelin>().SetTargetRpc(targetId); // Target other client
+    }
 
-        projectileInstance.GetComponent<HomingJavelin>().target = NetworkManager.Singleton.ConnectedClients[clientID].PlayerObject.transform; // Target other client
+    [Rpc(SendTo.Everyone)]
+    public void ActivateHorseRpc() 
+    {
+        horse.SetActive(true);
+
+        if (!IsOwner) return;
+
+        GetComponent<Horse>().enabled = true;
+
+        inputHandler.BlockInput();
+        onAnimatorCrossFade?.Invoke("horseriding", .25f);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void DeactivateHorseRpc(string nextAnimation)
+    {
+        horse.SetActive(false);
+
+        if (!IsOwner) return;
+
+        GetComponent<Horse>().enabled = false;
+
+        inputHandler.UnblockInput();
+        onAnimatorCrossFade?.Invoke(nextAnimation, .25f);
     }
     #endregion
 

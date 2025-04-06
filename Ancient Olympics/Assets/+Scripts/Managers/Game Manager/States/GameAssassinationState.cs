@@ -13,6 +13,9 @@ public class GameAssassinationState : GameBaseState
     {
         gameManager.Timer.StartTimer("Game Starting", 10);
 
+        gameManager.SpawnNpcsRpc(15);
+        HideUsernames();
+
         // Start game
         gameManager.onGameStartingCompleted += BeginGame;
     }
@@ -37,6 +40,10 @@ public class GameAssassinationState : GameBaseState
     public override void Exit()
     {
         gameManager.onGameStartingCompleted -= BeginGame;
+
+        RemoveWeapons();
+        HideUsernames(false);
+        gameManager.DespawnAllNpcsRpc();
 
         Player player = NetworkManager.Singleton.ConnectedClients[alivePlayerId].PlayerObject.GetComponentInChildren<Player>();
         UIManager.Instance.UpdatePlayerTimersRpc($"<color=#59dac9>{player.Username} <color=#ffffff>has won the round!"); // Update Message
@@ -66,11 +73,30 @@ public class GameAssassinationState : GameBaseState
         }
     }
 
+    void HideUsernames(bool hide = true)
+    {
+        foreach (var client in NetworkManager.Singleton.ConnectedClients.Values)
+        {
+            if (hide)
+                client.PlayerObject.GetComponentInParent<Player>().SetPlayerUIRpc("");
+            else
+                client.PlayerObject.GetComponentInParent<Player>().SetPlayerUIRpc(client.PlayerObject.GetComponentInParent<Player>().Username);
+        }
+    }
+
     void GiveEveryPlayerWeapon()
     {
         foreach (var client in NetworkManager.Singleton.ConnectedClients.Values)
         {
-            client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponClientRpc(1);
+            client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponRpc(client.ClientId, 1, true);
+        }
+    }
+
+    void RemoveWeapons()
+    {
+        foreach (var client in NetworkManager.Singleton.ConnectedClients.Values)
+        {
+            client.PlayerObject.GetComponent<WeaponHandler>().UnequipWeaponRpc();
         }
     }
 }

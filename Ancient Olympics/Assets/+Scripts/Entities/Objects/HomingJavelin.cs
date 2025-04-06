@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class HomingJavelin : NetworkEntity
 {
-    public Transform target;
+    Transform target;
 
     public override void OnNetworkSpawn()
     {
@@ -16,7 +16,7 @@ public class HomingJavelin : NetworkEntity
         {
             if (target.GetComponentInChildren<NetworkHealth>().Immune.Value)
             {
-                target.GetComponentInChildren<WeaponHandler>().EquipWeaponClientRpc(1);
+                target.GetComponentInChildren<WeaponHandler>().EquipWeaponRpc(target.GetComponentInParent<NetworkObject>().OwnerClientId, 2);
             }
         }
     }
@@ -26,16 +26,26 @@ public class HomingJavelin : NetworkEntity
         if (!IsOwner || target == null) return;
 
         Vector3 direction = (target.position - transform.position).normalized;
+        direction.y = 0f;
 
         float distance = Vector3.Distance(transform.position, target.position);
-        float stoppingDistance = 1.3f;
+        float stoppingDistance = 1.1f;
 
         if (distance > stoppingDistance)
         {
             // Move towards the target only if outside stopping range
             SendMove(direction, transform.position);
+        } 
+        else {
+            SendMove(-direction, transform.position);
         }
 
         SendRotation(direction);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void SetTargetRpc(ulong targetId)
+    {
+        target = NetworkManager.Singleton.ConnectedClients[targetId].PlayerObject.transform;
     }
 }

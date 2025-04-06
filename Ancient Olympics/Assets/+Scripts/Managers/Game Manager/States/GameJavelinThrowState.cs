@@ -24,7 +24,7 @@ public class GameJavelinThrowState : GameBaseState
             float time = gameManager.Timer.timerRemainingTimes["Game Starting"];
 
             if (time > 0)
-                UIManager.Instance.UpdatePlayerTimersRpc($"<color=#ff6666>Javelin Throwing <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
+                UIManager.Instance.UpdatePlayerTimersRpc($"<color=#7cd145>Javelin Throwing <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
         }
 
         SwitchState(); // Switch state if only 1 player is alive
@@ -46,7 +46,8 @@ public class GameJavelinThrowState : GameBaseState
     {
         UIManager.Instance.UpdatePlayerTimersRpc($"Begin!"); // Update Message
 
-        RandomClient().PlayerObject.GetComponent<WeaponHandler>().EquipWeaponClientRpc(2);
+        var client = RandomClient();
+        client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponRpc(client.ClientId, 2);
     }
 
     void SwitchState()

@@ -36,6 +36,7 @@ public class NPC : NetworkEntity
         onAnimatorSetBool += networkAnimatorSync.AnimateSetBoolRpc;
         onAnimatorCrossFade += networkAnimatorSync.AnimateCrossFadeRpc;
 
+        target = FindNewPosition();
         Idle();
     }
 

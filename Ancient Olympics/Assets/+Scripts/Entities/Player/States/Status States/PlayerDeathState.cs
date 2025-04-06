@@ -14,6 +14,12 @@ public class PlayerDeathState : PlayerBaseState
 
         player.DisablePlayerRpc();
 
+        if (player.transform.GetComponent<Horse>().enabled)
+        {
+            player.transform.GetComponent<Horse>().enabled = false;
+            player.Horse.SetActive(false);
+        }
+
         Cursor.SetCursor(player.DeathTexture, Vector2.zero, CursorMode.Auto);
     }
 

@@ -6,16 +6,8 @@ public class Hitbox : MonoBehaviour
     [Header("Damage Inflicted")]
     [SerializeField] float damage;
 
-    [Header("Attacker's ID (Set when activated)")]
-    [SerializeField] ulong ownerClientId; // Store the owner ID (the attacker)
-
     [Header("Destroy this object on hit?")]
     [SerializeField] bool destroyOnHit;
-    
-    public void SetOwner(ulong clientId)
-    {
-        ownerClientId = clientId; // Assign the attacker's ID when the hitbox is created
-    }
 
     void OnTriggerEnter(Collider other)
     {
@@ -23,7 +15,7 @@ public class Hitbox : MonoBehaviour
         {
             if (other.GetComponentInChildren<NetworkEntity>() == null) return; // If not entity, do nothing
 
-            if (networkObject.OwnerClientId != ownerClientId)
+            if (networkObject.OwnerClientId != GetComponentInParent<NetworkObject>().OwnerClientId)
             {
                 if (other.GetComponentInParent<NetworkHealth>().Dead.Value) return; // If entity is dead, do nothing
 
@@ -36,9 +28,8 @@ public class Hitbox : MonoBehaviour
         }
     }
 
-    [Rpc(SendTo.Server)]
     void DestroyProjectile()
     {
-        NetworkObject.Destroy(transform.parent.parent.gameObject);
+        transform.GetComponentInParent<NetworkEntity>().DestroyProjectileRpc();
     }
 }

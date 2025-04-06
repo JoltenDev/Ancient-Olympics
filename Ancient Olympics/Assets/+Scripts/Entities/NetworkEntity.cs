@@ -1,7 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
 
-[RequireComponent(typeof(Rigidbody))]
 public abstract class NetworkEntity : NetworkBehaviour
 {
     [Header("Entity Fields")]
@@ -76,5 +75,14 @@ public abstract class NetworkEntity : NetworkBehaviour
     {
         if (!IsOwner)
             rigidBody.rotation = Quaternion.Slerp(rigidBody.rotation, syncedRotation, rotationSpeed * Time.fixedDeltaTime);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void DestroyProjectileRpc()
+    {
+        if (IsServer)
+        {
+            GetComponent<NetworkObject>().Despawn(true);
+        }
     }
 }
