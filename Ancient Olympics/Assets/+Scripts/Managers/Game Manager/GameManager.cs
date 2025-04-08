@@ -14,6 +14,8 @@ public class GameManager : Singleton<GameManager>
 
     List<NetworkObject> spawnedNpcs = new List<NetworkObject>();
     [SerializeField] NetworkList<ulong> deadPlayers = new NetworkList<ulong>();
+
+    NetworkVariable<ulong> currentJavelinWielder = new NetworkVariable<ulong>();
     NetworkVariable<float> javelinSpeedAddend = new NetworkVariable<float>();
 
     public string startMessage;
@@ -23,6 +25,7 @@ public class GameManager : Singleton<GameManager>
     public Timer Timer { get => timer; }
     public NetworkList<ulong> DeadPlayers { get => deadPlayers; }
     public GameBaseState CurrentState { get => currentState; set => currentState = value; }
+    public NetworkVariable<ulong> CurrentJavelinWielder { get => currentJavelinWielder; }
     public NetworkVariable<float> JavelinSpeedAddend { get => javelinSpeedAddend; }
     #endregion
 
@@ -219,6 +222,14 @@ public class GameManager : Singleton<GameManager>
         if (!IsServer) return;
 
         javelinSpeedAddend.Value = amount;
+    }
+
+    [Rpc(SendTo.Server)]
+    public void SetJavelinWielderRpc(ulong id)
+    {
+        if (!IsServer) return;
+
+        currentJavelinWielder.Value = id;
     }
     #endregion
 

@@ -4,6 +4,7 @@ using UnityEngine;
 public class HomingJavelin : NetworkEntity
 {
     Transform target;
+    ulong targetId = 100;
 
     public override void OnNetworkSpawn()
     {
@@ -12,11 +13,12 @@ public class HomingJavelin : NetworkEntity
 
     public override void OnDestroy()
     {
-        if (target != null)
+        if (target != null && targetId != 100)
         {
             if (target.GetComponentInChildren<NetworkHealth>().Immune.Value)
             {
-                target.GetComponentInChildren<WeaponHandler>().EquipWeaponRpc(target.GetComponentInParent<NetworkObject>().OwnerClientId, 2);
+                target.GetComponentInChildren<WeaponHandler>().EquipWeaponRpc(targetId, 2);
+                GameManager.Instance.SetJavelinWielderRpc(targetId);
             }
         }
     }
@@ -51,6 +53,7 @@ public class HomingJavelin : NetworkEntity
     [Rpc(SendTo.Everyone)]
     public void SetTargetRpc(ulong targetId)
     {
+        this.targetId = targetId;
         target = NetworkManager.Singleton.ConnectedClients[targetId].PlayerObject.transform;
     }
 }

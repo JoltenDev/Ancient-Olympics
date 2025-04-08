@@ -1,8 +1,14 @@
 using Unity.Netcode;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class GameJavelinThrowState : GameBaseState
 {
+    float savedTime = Time.time;
+    float tick = 6f;
+
+    bool gameStarted = false;
+
     public GameJavelinThrowState(GameManager gameManager, GameStates states) : base(gameManager, states)
     {
     }
@@ -21,6 +27,17 @@ public class GameJavelinThrowState : GameBaseState
 
     public override void Update()
     {
+        if (gameManager.CurrentJavelinWielder.Value != 100)
+        {
+            var id = gameManager.CurrentJavelinWielder.Value;
+            if (Time.time > savedTime && gameStarted)
+            {
+                NetworkManager.Singleton.ConnectedClients[id]
+                    .PlayerObject.GetComponent<NetworkHealth>().SendDamageRpc(5, id, id);
+
+                savedTime = Time.time + tick;
+            }
+        }
     }
 
     public override void FixedUpdate()
@@ -32,6 +49,9 @@ public class GameJavelinThrowState : GameBaseState
         gameManager.startMessage = "";
 
         gameManager.SetJavelinAddendRpc(0);
+        gameManager.SetJavelinWielderRpc(100);
+
+        gameManager.AssignWeaponToEveryPlayer(2, true);
 
         gameManager.DeadPlayers.OnListChanged -= PlayerDied;
         gameManager.onGameStartingCompleted -= BeginGame;
@@ -41,8 +61,11 @@ public class GameJavelinThrowState : GameBaseState
     {
         gameManager.Timer.StartTimer("Round Active", 25);
 
+        gameStarted = true;
+
         var client = RandomClient();
         client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponRpc(client.ClientId, 2);
+        gameManager.SetJavelinWielderRpc(client.ClientId);
     }
 
     void PlayerDied(NetworkListEvent<ulong> changeEvent)

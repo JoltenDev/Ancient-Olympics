@@ -20,19 +20,20 @@ public class PlayerJavelinThrowState : PlayerBaseState
 
     public override void Update()
     {
-
     }
 
     public override void FixedUpdate()
     {
-
     }
     
     public override void Exit()
     {
-        if (FindTarget() != 100)
+        var targetId = FindTarget();
+
+        if (targetId != 100)
         {
-            RequestSpawnJavelinProjectile(FindTarget());
+            RequestSpawnJavelinProjectile(targetId);
+
             player.WeaponHandler.UnequipWeaponRpc();
         }
 
