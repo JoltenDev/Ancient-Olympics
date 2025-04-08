@@ -1,9 +1,9 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameJavelinThrowState : GameBaseState
+public class GameSwordFightState : GameBaseState
 {
-    public GameJavelinThrowState(GameManager gameManager, GameStates states) : base(gameManager, states)
+    public GameSwordFightState(GameManager gameManager, GameStates states) : base(gameManager, states)
     {
     }
 
@@ -22,7 +22,7 @@ public class GameJavelinThrowState : GameBaseState
             float time = gameManager.Timer.timerRemainingTimes["Game Starting"];
 
             if (time > 0)
-                UIManager.Instance.UpdatePlayerTimersRpc($"<color=#7cd145>Javelin Throwing <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
+                UIManager.Instance.UpdatePlayerTimersRpc($"<color=#904bae>Sword Fighting <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
         }
     }
 
@@ -33,19 +33,14 @@ public class GameJavelinThrowState : GameBaseState
     public override void Exit()
     {
         gameManager.onGameStartingCompleted -= BeginGame;
+
+        gameManager.AssignWeaponToEveryPlayer(0, true);
     }
 
     void BeginGame()
     {
         UIManager.Instance.UpdatePlayerTimersRpc($"Begin!"); // Update Message
 
-        var client = RandomClient();
-        client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponRpc(client.ClientId, 2);
-    }
-
-    NetworkClient RandomClient()
-    {
-        return NetworkManager.Singleton.ConnectedClients[
-            (ulong) UnityEngine.Random.Range(0, NetworkManager.Singleton.ConnectedClients.Count)];
+        gameManager.AssignWeaponToEveryPlayer(0);
     }
 }

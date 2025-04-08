@@ -240,3 +240,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 1000
   destroyOnHit: 0
+  hitboxAlwaysActive: 1

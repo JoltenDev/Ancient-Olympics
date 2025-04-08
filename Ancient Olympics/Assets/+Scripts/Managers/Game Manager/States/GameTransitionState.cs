@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class GameTransitionState : GameBaseState
 {
-    enum Modes { JavelinThrowing, Assassination }
+    enum Modes { JavelinThrowing, Assassination, Jousting, SwordFighting }
     bool transitionFromRound;
 
     public GameTransitionState(GameManager gameManager, GameStates states, bool transitionFromRound = true) : base(gameManager, states)
@@ -68,7 +68,9 @@ public class GameTransitionState : GameBaseState
             {
                 if (GameManager.Instance.DeadPlayers.Count > 0)
                     GameManager.Instance.RevivePlayersRpc(); // Revive all players for next round
-                GameManager.Instance.DeadPlayers.Clear(); // Clear dead players
+
+                if (GameManager.Instance.IsServer)
+                    GameManager.Instance.DeadPlayers.Clear(); // Clear dead players
 
                 gameManager.Timer.StartTimer("Transition", 5); // Start timer til gamemode starts (Transition -> Selection)
                 gameManager.onTransitionCompleted += SelectGameMode;
@@ -81,7 +83,7 @@ public class GameTransitionState : GameBaseState
 
     void SelectGameMode()
     {
-        var mode = (Modes) Random.Range(0, 2);
+        var mode = (Modes) Random.Range(0, 4);
 
         switch (mode)
         {
@@ -90,6 +92,12 @@ public class GameTransitionState : GameBaseState
                 break;
             case Modes.Assassination:
                 SwitchState(states.GameAssassinationState());
+                break;
+            case Modes.Jousting:
+                SwitchState(states.GameJoustState());
+                break;
+            case Modes.SwordFighting:
+                SwitchState(states.GameSwordFightState());
                 break;
         }
     }

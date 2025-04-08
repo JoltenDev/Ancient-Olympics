@@ -47,7 +47,7 @@ GameObject:
   - component: {fileID: 298281419214203462}
   - component: {fileID: 5680173509000569985}
   - component: {fileID: 1544134808459150217}
-  - component: {fileID: -5751262901298648773}
+  - component: {fileID: 4948994634757153555}
   - component: {fileID: 3637921804007269449}
   m_Layer: 0
   m_Name: NPC
@@ -79,7 +79,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3570647152602462692}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 77411d8cac287294cac2cc7406e52d1f, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -227,7 +227,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   animator: {fileID: 1222476030331589430}
---- !u!114 &-5751262901298648773
+--- !u!114 &4948994634757153555
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -242,6 +242,10 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   maxHealth: 100
   currentHealth:
+    m_InternalValue: 0
+  immune:
+    m_InternalValue: 1
+  dead:
     m_InternalValue: 0
 --- !u!114 &3637921804007269449
 MonoBehaviour:

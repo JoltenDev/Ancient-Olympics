@@ -9,6 +9,9 @@ public class Hitbox : MonoBehaviour
     [Header("Destroy this object on hit?")]
     [SerializeField] bool destroyOnHit;
 
+    [Header("Keep Hitbox Activated?")]
+    public bool hitboxAlwaysActive;
+
     void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<NetworkObject>(out NetworkObject networkObject))
@@ -17,8 +20,6 @@ public class Hitbox : MonoBehaviour
 
             if (networkObject.OwnerClientId != GetComponentInParent<NetworkObject>().OwnerClientId)
             {
-                if (other.GetComponentInParent<NetworkHealth>().Dead.Value) return; // If entity is dead, do nothing
-
                 other.GetComponentInParent<NetworkHealth>().SendDamageRpc(damage, networkObject.OwnerClientId);
 
                 gameObject.SetActive(false);

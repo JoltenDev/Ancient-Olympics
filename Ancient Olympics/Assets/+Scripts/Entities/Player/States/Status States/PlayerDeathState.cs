@@ -10,22 +10,24 @@ public class PlayerDeathState : PlayerBaseState
     public override void Enter()
     {
         player.onAnimatorCrossFade?.Invoke("death", 0.25f); // Start Death animation
-        SendDeath(player.OwnerClientId);
+        Cursor.SetCursor(player.DeathTexture, Vector2.zero, CursorMode.Auto);
 
-        player.DisablePlayerRpc();
+        GameManager.Instance?.AddPlayerToDeadListRpc(player.OwnerClientId);
+
+        player.InputHandler.BlockInput();
+        player.NetworkHealth.SetDeadRpc(player.OwnerClientId, true);
+        player.NetworkHealth.CurrentHealth.OnValueChanged += SwitchState;
 
         if (player.transform.GetComponent<Horse>().enabled)
         {
             player.transform.GetComponent<Horse>().enabled = false;
-            player.Horse.SetActive(false);
+            player.DeactivateHorseRpc("death", true);
+            player.WeaponHandler.UnequipWeaponRpc();
         }
-
-        Cursor.SetCursor(player.DeathTexture, Vector2.zero, CursorMode.Auto);
     }
 
     public override void Update()
     {
-
     }
 
     public override void FixedUpdate()
@@ -35,17 +37,17 @@ public class PlayerDeathState : PlayerBaseState
 
     public override void Exit()
     {
-        Cursor.SetCursor(player.DefaultTexture, Vector2.zero, CursorMode.Auto);
         player.onAnimatorCrossFade?.Invoke("idle", 0.25f);
+        Cursor.SetCursor(player.DefaultTexture, Vector2.zero, CursorMode.Auto);
+
+        player.InputHandler.UnblockInput();
+        player.NetworkHealth.SetDeadRpc(player.OwnerClientId, false);
+        player.NetworkHealth.CurrentHealth.OnValueChanged -= SwitchState;
     }
 
-    void SwitchState()
+    void SwitchState(float prevAmount, float newAmount)
     {
-    }
-
-    
-    void SendDeath(ulong id)
-    {
-        GameManager.Instance?.AddPlayerToDeadListRpc(id);
+        if (player.NetworkHealth.CurrentHealth.Value > 0)
+            SwitchState(states.Idle());
     }
 }

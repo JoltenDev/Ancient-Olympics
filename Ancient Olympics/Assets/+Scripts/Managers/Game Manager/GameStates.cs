@@ -13,4 +13,6 @@ public class GameStates
     public GameBaseState GameTransitionState(bool transitionFromRounds = true) { return new GameTransitionState(gameManager, this, transitionFromRounds); }
     public GameBaseState GameJavelinThrowState() { return new GameJavelinThrowState(gameManager, this); }
     public GameBaseState GameAssassinationState() { return new GameAssassinationState(gameManager, this); }
+    public GameBaseState GameJoustState() { return new GameJoustState(gameManager, this); }
+    public GameBaseState GameSwordFightState() { return new GameSwordFightState(gameManager, this); }
 }

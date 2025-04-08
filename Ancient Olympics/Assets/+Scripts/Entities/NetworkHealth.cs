@@ -32,6 +32,7 @@ public class NetworkHealth : NetworkBehaviour
     {
         if (!IsServer) return;
         if (immune.Value) return;
+        if (dead.Value) return;
 
         if (NetworkManager.Singleton.ConnectedClients[id].PlayerObject.TryGetComponent<Player>(out Player player)) 
             player.HitRpc();
@@ -54,7 +55,6 @@ public class NetworkHealth : NetworkBehaviour
         {
             if (NetworkManager.Singleton.ConnectedClients[id].PlayerObject.TryGetComponent<Player>(out Player player)) 
                 player.DeathRpc();
-            dead.Value = true;
         }
     }
 
@@ -65,5 +65,14 @@ public class NetworkHealth : NetworkBehaviour
 
         NetworkManager.Singleton.ConnectedClients[id].PlayerObject
             .GetComponentInChildren<NetworkHealth>().Immune.Value = status;
+    }
+
+    [Rpc(SendTo.Server)]
+    public void SetDeadRpc(ulong id, bool status)
+    {
+        if (!IsServer) return;
+
+        NetworkManager.Singleton.ConnectedClients[id].PlayerObject
+            .GetComponentInChildren<NetworkHealth>().Dead.Value = status;
     }
 }

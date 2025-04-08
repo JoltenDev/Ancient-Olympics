@@ -45,10 +45,10 @@ public class UIManager : Singleton<UIManager>
     }
 
     [Rpc(SendTo.Everyone)]
-    public void ActivateHudUIRpc()
-    {
-        Hud.SetActive(true);
-    }
+    public void ActivateHudUIRpc() => Hud.SetActive(true);
+
+    [Rpc(SendTo.Everyone)]
+    public void DeactivateHudUIRpc() => Hud.SetActive(false);
 
     [Rpc(SendTo.Everyone)]
     public void ActivateGlobalMessageRpc()

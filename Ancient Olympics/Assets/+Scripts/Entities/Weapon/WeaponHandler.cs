@@ -32,7 +32,8 @@ public class WeaponHandler : NetworkBehaviour
 
         // Setup hitbox
         hitbox = equippedWeapon.GetComponentInChildren<Hitbox>();
-        hitbox.gameObject.SetActive(false);
+        if (!hitbox.hitboxAlwaysActive)
+            hitbox.gameObject.SetActive(false);
 
         // Assign events
         onSwingStarted += ActivateHitboxRpc;
@@ -70,6 +71,8 @@ public class WeaponHandler : NetworkBehaviour
     void DeactivateHitboxRpc()
     {
         if (!IsOwner) return;
-        hitbox.gameObject.SetActive(false);
+
+        if (!hitbox.hitboxAlwaysActive)
+            hitbox.gameObject.SetActive(false);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,6 +7,9 @@ public class NPC : NetworkEntity
 {
     [Header("NPC Fields")]
     [SerializeField] NetworkAnimatorSync networkAnimatorSync;
+
+    enum States { Idle, Wander };
+    States state = States.Idle;
 
     Timer cooldown = new Timer();
 
@@ -51,32 +55,43 @@ public class NPC : NetworkEntity
 
     void FixedUpdate()
     {
-        float distance = Vector3.Distance(transform.position, target);
-        float stoppingDistance = 0.5f;
-        Vector3 direction = (target - transform.position).normalized;
-        direction.y = 0;
+        if (!IsServer) return;
 
-        if (direction != Vector3.zero)
+        switch (state)
         {
-            SendMove(direction, transform.position);
-            SendRotation(direction);
-        }
+            case States.Idle:
+                onAnimatorSetBool?.Invoke("IsMoving", false);
+                break;
+            case States.Wander:
+                float distance = Vector3.Distance(transform.position, target);
+                float stoppingDistance = 0.5f;
+                Vector3 direction = (target - transform.position).normalized;
+                direction.y = 0;
 
-        if (distance < stoppingDistance)
-            onAnimatorSetBool?.Invoke("IsMoving", false);
-        else
-            onAnimatorSetBool?.Invoke("IsMoving", true);
+                if (direction != Vector3.zero)
+                {
+                    MoveRpc(direction);
+                }
+
+                if (distance < stoppingDistance)
+                    onAnimatorSetBool?.Invoke("IsMoving", false);
+                else
+                    onAnimatorSetBool?.Invoke("IsMoving", true);
+                break;
+        }
     }
 
     void Idle()
     {
         cooldown.StartTimer("Idle", StateLength());
+        state = States.Idle;
     }
 
     void Wander()
     {
         target = FindNewPosition();
         cooldown.StartTimer("Wander", StateLength());
+        state = States.Wander;
     }
 
     Vector3 FindNewPosition()
@@ -87,4 +102,13 @@ public class NPC : NetworkEntity
     }
 
     float StateLength() => UnityEngine.Random.Range(0f, 5f);
+
+    [Rpc(SendTo.Everyone)]
+    void MoveRpc(Vector3 direction)
+    {
+        rigidBody.MovePosition(Vector3.Lerp(rigidBody.position, transform.position + direction * speed * Time.fixedDeltaTime, 5 * Time.fixedDeltaTime));
+
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        rigidBody.MoveRotation(Quaternion.Slerp(rigidBody.rotation, targetRotation, 0.1f));
+    }
 }

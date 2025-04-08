@@ -2,6 +2,8 @@ using UnityEngine;
 using Unity.Netcode;
 using TMPro;
 using System;
+using UnityEngine.UI;
+using System.Collections;
 
 public class Player : NetworkEntity
 {
@@ -36,6 +38,7 @@ public class Player : NetworkEntity
     public PlayerBaseState CurrentState { get => currentState; set => currentState = value; }
     public PlayerStates States { get => states; }
     public PlayerInputHandler InputHandler { get => inputHandler; }
+    public GameObject Hud { get => hud; }
     public GameObject Horse { get => horse; }
     public Timer CooldownHandler { get => cooldownHandler; }
     public NetworkHealth NetworkHealth { get => health; }
@@ -97,8 +100,12 @@ public class Player : NetworkEntity
         CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Combo Window", () => onComboWindowCompleted?.Invoke());
         CooldownHandler.RegisterTimer(CooldownHandler.timerCompletedEvents, "Hit", () => onHitCompleted?.Invoke());
 
+        // Animator
         onAnimatorSetBool += networkAnimatorSync.AnimateSetBoolRpc;
         onAnimatorCrossFade += networkAnimatorSync.AnimateCrossFadeRpc;
+
+        // Health UI
+        NetworkHealth.CurrentHealth.OnValueChanged += HealthUI;
     }
 
     public override void OnDestroy()
@@ -112,6 +119,8 @@ public class Player : NetworkEntity
 
         onAnimatorSetBool -= networkAnimatorSync.AnimateSetBoolRpc;
         onAnimatorCrossFade -= networkAnimatorSync.AnimateCrossFadeRpc;
+
+        NetworkHealth.CurrentHealth.OnValueChanged -= HealthUI;
     }
     
     void Update()
@@ -129,7 +138,8 @@ public class Player : NetworkEntity
 
         CurrentState.FixedUpdate();
 
-        Rotate();
+        if (!health.Dead.Value)
+            Rotate();
     }
 
     void SetMoveInput(Vector2 input) => moveInput = input;
@@ -166,6 +176,27 @@ public class Player : NetworkEntity
             Quaternion targetRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(15f, 0f, 0f); // Adjust tilt angle as needed
             MoveUIRpc(targetRotation);
         }
+    }
+
+    void HealthUI(float prevValue, float newValue)
+    {
+        StartCoroutine(SmoothHealthLerp(prevValue, newValue));
+    }
+
+    IEnumerator SmoothHealthLerp(float from, float to)
+    {
+        Slider slider = hud.GetComponent<HudItems>().health.GetComponentInChildren<Slider>();
+        float elapsed = 0f;
+        float duration = 0.5f; // Adjust for speed
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            slider.value = Mathf.Lerp(from, to, elapsed / duration);
+            yield return null;
+        }
+
+        slider.value = to; // snap to final value just in case
     }
 
     #region RPCs
@@ -213,12 +244,13 @@ public class Player : NetworkEntity
     }
 
     [Rpc(SendTo.Everyone)]
-    public void DeactivateHorseRpc(string nextAnimation)
+    public void DeactivateHorseRpc(string nextAnimation, bool dead = false)
     {
         horse.SetActive(false);
 
         if (!IsOwner) return;
-
+        if (dead) return;
+        
         GetComponent<Horse>().enabled = false;
 
         inputHandler.UnblockInput();
@@ -228,27 +260,9 @@ public class Player : NetworkEntity
 
     #region States
     [Rpc(SendTo.Everyone)]
-    public void IdleRpc() => CurrentState?.SwitchState(states?.Idle());
-    [Rpc(SendTo.Everyone)]
     public void HitRpc() => CurrentState?.SwitchState(states?.Hit());
     [Rpc(SendTo.Everyone)]
     public void DeathRpc() => CurrentState?.SwitchState(states?.Death());
-    #endregion
-
-    #region Player
-    [Rpc(SendTo.Everyone)]
-    public void EnablePlayerRpc()
-    {
-        enabled = true;
-        InputHandler.UnblockInput();
-    }
-
-    [Rpc(SendTo.Everyone)]
-    public void DisablePlayerRpc()
-    {
-        enabled = false;
-        InputHandler.BlockInput();
-    }
     #endregion
 
     #region UI Elements
