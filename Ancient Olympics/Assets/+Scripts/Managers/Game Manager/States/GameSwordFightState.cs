@@ -10,6 +10,7 @@ public class GameSwordFightState : GameBaseState
     public override void Enter()
     {
         gameManager.Timer.StartTimer("Game Starting", 10);
+        gameManager.startMessage = "<color=#904bae>Sword Fighting";
 
         // Start game
         gameManager.onGameStartingCompleted += BeginGame;
@@ -17,13 +18,6 @@ public class GameSwordFightState : GameBaseState
 
     public override void Update()
     {
-        if (gameManager.Timer.timerRemainingTimes.ContainsKey("Game Starting"))
-        {
-            float time = gameManager.Timer.timerRemainingTimes["Game Starting"];
-
-            if (time > 0)
-                UIManager.Instance.UpdatePlayerTimersRpc($"<color=#904bae>Sword Fighting <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
-        }
     }
 
     public override void FixedUpdate()
@@ -32,14 +26,16 @@ public class GameSwordFightState : GameBaseState
 
     public override void Exit()
     {
-        gameManager.onGameStartingCompleted -= BeginGame;
+        gameManager.startMessage = "";
 
         gameManager.AssignWeaponToEveryPlayer(0, true);
+
+        gameManager.onGameStartingCompleted -= BeginGame;
     }
 
     void BeginGame()
     {
-        UIManager.Instance.UpdatePlayerTimersRpc($"Begin!"); // Update Message
+        gameManager.Timer.StartTimer("Round Active", 25);
 
         gameManager.AssignWeaponToEveryPlayer(0);
     }

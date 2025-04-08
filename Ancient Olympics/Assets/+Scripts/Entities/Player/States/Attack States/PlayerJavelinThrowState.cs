@@ -12,6 +12,7 @@ public class PlayerJavelinThrowState : PlayerBaseState
         player.WeaponHandler.onSwingStarted?.Invoke();
 
         player.onAnimatorCrossFade?.Invoke("throw", 0.25f);
+        GameManager.Instance.SetJavelinAddendRpc(GameManager.Instance.JavelinSpeedAddend.Value + 5);
 
         player.CooldownHandler.StartTimer("Attack Duration", .5f);
         player.onAttackDurationCompleted += SwitchState;
@@ -46,7 +47,7 @@ public class PlayerJavelinThrowState : PlayerBaseState
 
     void RequestSpawnJavelinProjectile(ulong targetId)
     {
-        player.SpawnJavelinProjectileRpc(player.OwnerClientId, targetId, player.transform.position, player.transform.forward);
+        player.SpawnJavelinProjectileRpc(player.OwnerClientId, targetId, GameManager.Instance.JavelinSpeedAddend.Value, player.transform.position, player.transform.forward);
     }
 
     ulong FindTarget()

@@ -9,7 +9,14 @@ public class PlayerDeathState : PlayerBaseState
 
     public override void Enter()
     {
-        player.onAnimatorCrossFade?.Invoke("death", 0.25f); // Start Death animation
+        if (player.transform.GetComponent<Horse>().enabled)
+        {
+            player.DeactivateHorseRpc();
+            player.WeaponHandler.UnequipWeaponRpc();
+        }
+
+        player.onAnimatorCrossFade.Invoke("death", 0.25f); // Start Death animation
+
         Cursor.SetCursor(player.DeathTexture, Vector2.zero, CursorMode.Auto);
 
         GameManager.Instance?.AddPlayerToDeadListRpc(player.OwnerClientId);
@@ -17,13 +24,6 @@ public class PlayerDeathState : PlayerBaseState
         player.InputHandler.BlockInput();
         player.NetworkHealth.SetDeadRpc(player.OwnerClientId, true);
         player.NetworkHealth.CurrentHealth.OnValueChanged += SwitchState;
-
-        if (player.transform.GetComponent<Horse>().enabled)
-        {
-            player.transform.GetComponent<Horse>().enabled = false;
-            player.DeactivateHorseRpc("death", true);
-            player.WeaponHandler.UnequipWeaponRpc();
-        }
     }
 
     public override void Update()

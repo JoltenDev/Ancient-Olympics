@@ -61,6 +61,8 @@ public class GameTransitionState : GameBaseState
         }
         else
         {
+            gameManager.Timer.StopTimer("Round Active"); // Stop the round timer;
+
             gameManager.Timer.StartTimer("Buffer", 5); // Start buffer timer (Buffer -> Transition)
             gameManager.onBufferCompleted += StartTransition;
 

@@ -93,4 +93,23 @@ public class Timer
             // Timer was canceled
         }
     }
+
+    /// <summary>
+    /// Stops and cleans up a running timer by its name.
+    /// </summary>
+    /// <param name="timerName">The name of the timer to stop and clean up.</param>
+    public void StopTimer(string timerName)
+    {
+        if (activeTimers.TryGetValue(timerName, out var cts))
+        {
+            cts.Cancel();
+            cts.Dispose();
+            activeTimers.Remove(timerName);
+        }
+
+        if (timerRemainingTimes.ContainsKey(timerName))
+        {
+            timerRemainingTimes.Remove(timerName);
+        }
+    }
 }

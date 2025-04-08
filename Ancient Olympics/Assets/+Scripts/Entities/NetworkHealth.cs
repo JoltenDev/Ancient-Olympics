@@ -28,17 +28,17 @@ public class NetworkHealth : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void SendDamageRpc(float amount, ulong id)
+    public void SendDamageRpc(float amount, ulong attackerId, ulong victimId, float knockback = 0)
     {
         if (!IsServer) return;
         if (immune.Value) return;
         if (dead.Value) return;
 
-        if (NetworkManager.Singleton.ConnectedClients[id].PlayerObject.TryGetComponent<Player>(out Player player)) 
-            player.HitRpc();
+        if (NetworkManager.Singleton.ConnectedClients[victimId].PlayerObject.TryGetComponent<Player>(out Player player)) 
+            player.HitRpc(attackerId, knockback);
 
         currentHealth.Value = Mathf.Max(currentHealth.Value - amount, 0);
-        CheckDeath(id);
+        CheckDeath(victimId);
     }
 
     [Rpc(SendTo.Server)]

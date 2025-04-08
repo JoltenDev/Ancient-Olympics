@@ -30,7 +30,6 @@ public class Player : NetworkEntity
 
     GameObject hitbox;
     Vector2 moveInput;
-    float dodgeStrength = 10f;
 
     #region Getters/Setters
     public string Username { get => username; }
@@ -73,7 +72,10 @@ public class Player : NetworkEntity
     {
         if (!IsOwner) return;
 
-        SendUsernameRpc(NetworkAccount.Username);
+        if (NetworkAccount.Username == null)
+            SendUsernameRpc($"Player {OwnerClientId + 1}");
+        else
+            SendUsernameRpc(NetworkAccount.Username);
         SetPlayerUIRpc(username);
 
         if (UIManager.Instance != null)
@@ -201,23 +203,47 @@ public class Player : NetworkEntity
 
     #region RPCs
     #region Specifics
+    /// <summary>
+    /// Applies a directional impulse to the player based on input and their current facing direction.
+    /// </summary>
+    /// <param name="input">A 2D vector representing horizontal and vertical input direction.</param>
+    /// <param name="forward">The forward direction of the player.</param>
+    /// <param name="right">The rightward direction of the player.</param>
+    /// <param name="strength">The magnitude of the force to apply.</param>
     [Rpc(SendTo.Server)]
-    public void SendDodgeRpc(Vector3 direction, Vector3 forward, Vector3 right)
+    public void SendPushRpc(Vector2 input, Vector3 forward, Vector3 right, float strength)
     {
         forward.y = 0;
         right.y = 0;
         forward.Normalize();
         right.Normalize();
 
-        Vector3 dodgeDirection = (right * direction.x) + (forward * direction.y);
+        Vector3 direction = (right * input.x) + (forward * input.y);
 
-        rigidBody.AddForce(dodgeDirection * dodgeStrength, ForceMode.Impulse);
+        rigidBody.AddForce(direction * strength, ForceMode.Impulse);
+
+        SyncPositionRpc(rigidBody.position);
+    }
+
+    /// <summary>
+    /// Applies an impulse that pushes the player backward, opposite to where they are currently facing.
+    /// </summary>
+    /// <param name="forward">The forward direction of the player.</param>
+    /// <param name="right">The rightward direction of the player.</param>
+    /// <param name="strength">The magnitude of the force to apply.</param>
+    [Rpc(SendTo.Server)]
+    public void SendPushRpc(Vector3 forward, float strength)
+    {
+        forward.y = 0;
+        forward.Normalize();
+
+        rigidBody.AddForce(forward * strength, ForceMode.Impulse);
 
         SyncPositionRpc(rigidBody.position);
     }
 
     [Rpc(SendTo.Server)]
-    public void SpawnJavelinProjectileRpc(ulong ownerId, ulong targetId, Vector3 position, Vector3 direction)
+    public void SpawnJavelinProjectileRpc(ulong ownerId, ulong targetId, float speed, Vector3 position, Vector3 direction)
     {
         GameObject projectilePrefab = WeaponHandler.projectiles[0];
 
@@ -227,6 +253,7 @@ public class Player : NetworkEntity
         NetworkObject networkObj = projectilePrefab.GetComponent<NetworkObject>();
         var clone = networkObj.InstantiateAndSpawn(NetworkManager.Singleton, ownerId, false, false, false, spawnPos, spawnRot);
 
+        clone.GetComponent<HomingJavelin>().AddSpeed(speed);
         clone.GetComponentInChildren<HomingJavelin>().SetTargetRpc(targetId); // Target other client
     }
 
@@ -244,23 +271,23 @@ public class Player : NetworkEntity
     }
 
     [Rpc(SendTo.Everyone)]
-    public void DeactivateHorseRpc(string nextAnimation, bool dead = false)
+    public void DeactivateHorseRpc()
     {
         horse.SetActive(false);
 
         if (!IsOwner) return;
-        if (dead) return;
-        
+
         GetComponent<Horse>().enabled = false;
 
+        if (NetworkHealth.Dead.Value) return;
+
         inputHandler.UnblockInput();
-        onAnimatorCrossFade?.Invoke(nextAnimation, .25f);
     }
     #endregion
 
     #region States
     [Rpc(SendTo.Everyone)]
-    public void HitRpc() => CurrentState?.SwitchState(states?.Hit());
+    public void HitRpc(ulong id, float knockback) => CurrentState?.SwitchState(states?.Hit(id, knockback));
     [Rpc(SendTo.Everyone)]
     public void DeathRpc() => CurrentState?.SwitchState(states?.Death());
     #endregion

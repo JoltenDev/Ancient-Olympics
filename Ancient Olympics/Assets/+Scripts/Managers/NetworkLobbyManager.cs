@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using System.Collections;
 
 public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 {
@@ -78,6 +79,8 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         DontDestroyOnLoad(player);
 
         UpdatePlayerCount(); // Update player count
+
+        StartCoroutine(SendUsernameUIUpdates());
     }
 
     void OnClientDisconnected(ulong clientId)
@@ -92,7 +95,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
         UpdatePlayerCount();
     }
-    
+
     void UpdatePlayerCount()
     {
         OnPlayerCountChanged?.Invoke(PlayerCount);
@@ -127,5 +130,15 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
                 return netInterface.ToString();
         }
         return "127.0.0.1";
+    }
+
+    IEnumerator SendUsernameUIUpdates()
+    {
+        yield return new WaitForSeconds(0.1f); // Wait a frame or two
+        foreach (var id in NetworkManager.Singleton.ConnectedClients.Keys)
+        {
+            var player_ = NetworkManager.Singleton.ConnectedClients[id].PlayerObject.GetComponentInParent<Player>();
+            player_.SetPlayerUIRpc(player_.Username);
+        }
     }
 }

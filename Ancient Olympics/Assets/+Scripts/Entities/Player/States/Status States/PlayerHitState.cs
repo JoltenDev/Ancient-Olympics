@@ -1,16 +1,24 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerHitState : PlayerBaseState
 {
-    public PlayerHitState(Player player, PlayerStates states) : base(player, states)
+    ulong id = 100;
+    float knockback = 0;
+
+    public PlayerHitState(Player player, PlayerStates states, ulong id, float knockback) : base(player, states)
     {
+        this.knockback = knockback;
+        this.id = id;
     }
 
     public override void Enter()
     {
         player.onAnimatorCrossFade?.Invoke("hit1", 0.25f); // Start hit animation
-
         player.CooldownHandler.StartTimer("Hit", 0.5f);
+
+        Transform otherPlayer = NetworkManager.Singleton.ConnectedClients[id].PlayerObject.transform;
+        player.SendPushRpc(otherPlayer.forward, knockback); // Send force to server
 
         if (player.NetworkHealth.CurrentHealth.Value <= 0)
             SwitchState(states.Death());

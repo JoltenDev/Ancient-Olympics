@@ -11,7 +11,7 @@ public class PlayerDodgeState : PlayerBaseState
     {
         player.onAnimatorCrossFade?.Invoke("dodge", .25f); // Invoke dodge animation
 
-        player.SendDodgeRpc(player.MoveInput, player.transform.forward, player.transform.right); // Send dodge to server
+        player.SendPushRpc(player.MoveInput, player.transform.forward, player.transform.right, 10f); // Send force to server
 
         player.CooldownHandler.StartTimer("Dodge", 1.5f); // Start dodge cooldown
         SwitchState(states.Frozen(1f)); // Freeze for a second after dodging

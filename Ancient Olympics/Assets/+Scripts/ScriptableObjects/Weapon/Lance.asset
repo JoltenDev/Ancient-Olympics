@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponName: Lance
   weaponPrefab: {fileID: 1037730064103153945, guid: a273ddfc6e606c74b8da7bf2dc053a65, type: 3}
+  damage: 1000
+  knockbackStrength: 8
   weaponIcon: {fileID: 0}
   attackType: 1

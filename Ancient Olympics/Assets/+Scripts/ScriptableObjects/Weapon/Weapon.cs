@@ -6,6 +6,10 @@ public class Weapon : ScriptableObject
 {
     public string weaponName;
     public GameObject weaponPrefab;  // Prefab of the weapon
+
+    public float damage;
+    public float knockbackStrength;
+
     public Sprite weaponIcon; // UI Display
     public AttackType attackType; // Enum defining attack style
 

@@ -10,6 +10,7 @@ public class GameAssassinationState : GameBaseState
     public override void Enter()
     {
         gameManager.Timer.StartTimer("Game Starting", 10);
+        gameManager.startMessage = "<color=#ff6666>Assassination";
 
         gameManager.SpawnNpcsRpc(15);
         HideUsernames();
@@ -20,13 +21,6 @@ public class GameAssassinationState : GameBaseState
 
     public override void Update()
     {
-        if (gameManager.Timer.timerRemainingTimes.ContainsKey("Game Starting"))
-        {
-            float time = gameManager.Timer.timerRemainingTimes["Game Starting"];
-
-            if (time > 0)
-                UIManager.Instance.UpdatePlayerTimersRpc($"<color=#ff6666>Assassination <color=#ffffff>has been chosen!\nStarting... {time:F1}s");
-        }
     }
 
     public override void FixedUpdate()
@@ -35,17 +29,18 @@ public class GameAssassinationState : GameBaseState
 
     public override void Exit()
     {
-        gameManager.onGameStartingCompleted -= BeginGame;
+        gameManager.startMessage = "";
 
         gameManager.AssignWeaponToEveryPlayer(1, true);
         HideUsernames(false);
         gameManager.DespawnAllNpcsRpc();
+
+        gameManager.onGameStartingCompleted -= BeginGame;
     }
 
     void BeginGame()
     {
-        UIManager.Instance.UpdatePlayerTimersRpc($"Begin!"); // Update Message
-
+        gameManager.Timer.StartTimer("Round Active", 25);
         gameManager.AssignWeaponToEveryPlayer(1, false, true);
     }
 

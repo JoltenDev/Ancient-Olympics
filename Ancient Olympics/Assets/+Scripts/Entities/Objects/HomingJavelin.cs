@@ -43,6 +43,11 @@ public class HomingJavelin : NetworkEntity
         SendRotation(direction);
     }
 
+    public void AddSpeed(float amount)
+    {
+        speed += amount;
+    }
+
     [Rpc(SendTo.Everyone)]
     public void SetTargetRpc(ulong targetId)
     {

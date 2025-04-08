@@ -72,7 +72,7 @@ public class NetworkTester : NetworkBehaviour
             else
             {
                 client.GetComponent<Player>().WeaponHandler.UnequipWeaponRpc();
-                client.GetComponent<Player>().DeactivateHorseRpc("idle");
+                client.GetComponent<Player>().DeactivateHorseRpc();
             }
         }
 

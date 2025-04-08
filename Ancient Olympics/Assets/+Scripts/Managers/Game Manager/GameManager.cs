@@ -14,17 +14,24 @@ public class GameManager : Singleton<GameManager>
 
     List<NetworkObject> spawnedNpcs = new List<NetworkObject>();
     [SerializeField] NetworkList<ulong> deadPlayers = new NetworkList<ulong>();
+    NetworkVariable<float> javelinSpeedAddend = new NetworkVariable<float>();
+
+    public string startMessage;
 
     #region Getters/Setters
     public GameStates States { get => states; }
     public Timer Timer { get => timer; }
     public NetworkList<ulong> DeadPlayers { get => deadPlayers; }
     public GameBaseState CurrentState { get => currentState; set => currentState = value; }
+    public NetworkVariable<float> JavelinSpeedAddend { get => javelinSpeedAddend; }
     #endregion
 
     #region Actions
     public Action onGameStartingStarted;
     public Action onGameStartingCompleted;
+    public Action onRoundActiveStarted;
+    public Action onRoundActiveCompleted;
+
     public Action onTransitionStarted;
     public Action onTransitionCompleted;
     public Action onBuffferStarted;
@@ -37,17 +44,42 @@ public class GameManager : Singleton<GameManager>
 
         Timer.RegisterTimer(Timer.timerStartedEvents, "Game Starting", () => { onGameStartingStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Game Starting", () => { onGameStartingCompleted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerStartedEvents, "Round Active", () => { onRoundActiveStarted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerCompletedEvents, "Round Active", () => { onRoundActiveCompleted?.Invoke(); });
+
         Timer.RegisterTimer(Timer.timerStartedEvents, "Transition", () => { onTransitionStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Transition", () => { onTransitionCompleted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerStartedEvents, "Buffer", () => { onBuffferStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Buffer", () => { onBufferCompleted?.Invoke(); });
 
+        onRoundActiveCompleted += RoundTimerCompleted;
         deadPlayers.OnListChanged += CheckPlayerCount;
+    }
+
+    public override void OnDestroy()
+    {
+        onRoundActiveCompleted -= RoundTimerCompleted;
     }
 
     void Update()
     {
         CurrentState?.Update();
+
+        if (Timer.timerRemainingTimes.ContainsKey("Game Starting"))
+        {
+            float time = Timer.timerRemainingTimes["Game Starting"];
+
+            if (time > 0)
+                UIManager.Instance.UpdatePlayerTimersRpc($"{startMessage} <color=#2E2E2E>has been chosen!\nStarting... {time:F1}s");
+        }
+
+        if (Timer.timerRemainingTimes.ContainsKey("Round Active"))
+        {
+            float time = Timer.timerRemainingTimes["Round Active"];
+
+            if (time > 0)
+                UIManager.Instance.UpdatePlayerTimersRpc($"Time left: {time:F1}s");
+        }
     }
 
     /// <summary>
@@ -70,14 +102,14 @@ public class GameManager : Singleton<GameManager>
     /// <param name="changeEvent">The event triggered by a change in the network list of connected players.</param>
     void CheckPlayerCount(NetworkListEvent<ulong> changeEvent)
     {
+        // This is invoked twice, may cause future problems
+
         if (!IsServer) return;
         if (currentState == states.GameTransitionState()) return;
 
-        Debug.Log($"Current Client Invoked Transition: {OwnerClientId}");
-
         if (DeadPlayers.Count == NetworkManager.Singleton.ConnectedClients.Count - 1) // If the amount of dead players is equal to the amount of connect clients - 1
         {
-            ulong alivePlayerId = 0;
+            ulong alivePlayerId = 100;
 
             foreach (var id in NetworkManager.Singleton.ConnectedClients.Keys)
             {
@@ -89,10 +121,16 @@ public class GameManager : Singleton<GameManager>
             }
 
             Player player = NetworkManager.Singleton.ConnectedClients[alivePlayerId].PlayerObject.GetComponentInChildren<Player>();
-            UIManager.Instance.UpdatePlayerTimersRpc($"<color=#59dac9>{player.Username} <color=#ffffff>has won the round!"); // Update Message
+            UIManager.Instance.UpdatePlayerTimersRpc($"<color=#59dac9>{player.Username} <color=#2E2E2E>has won the round!"); // Update Message
 
             SwitchState(states.GameTransitionState());
         }
+    }
+
+    void RoundTimerCompleted()
+    {
+        UIManager.Instance.UpdatePlayerTimersRpc($"Time is finished!\n<color=#b22020>Nobody <color=#2E2E2E>has won the round!"); // Update Message
+        SwitchState(states.GameTransitionState());
     }
 
     /// <summary>
@@ -173,6 +211,14 @@ public class GameManager : Singleton<GameManager>
         }
 
         spawnedNpcs.Clear();
+    }
+
+    [Rpc(SendTo.Server)]
+    public void SetJavelinAddendRpc(float amount)
+    {
+        if (!IsServer) return;
+
+        javelinSpeedAddend.Value = amount;
     }
     #endregion
 

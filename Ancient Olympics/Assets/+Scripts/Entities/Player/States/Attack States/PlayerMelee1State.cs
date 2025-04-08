@@ -16,6 +16,8 @@ public class PlayerMelee1State : PlayerBaseState
         player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
         player.CooldownHandler.StartTimer("Combo Window", 0.5f);
 
+        player.SendPushRpc(player.MoveInput, player.transform.forward, player.transform.right, 3f); // Send force to server
+
         player.InputHandler.onAttackInput += SwitchToNextAttack;
         player.onAttackDurationCompleted += ResetState;
         player.onComboWindowCompleted += CanAttack;

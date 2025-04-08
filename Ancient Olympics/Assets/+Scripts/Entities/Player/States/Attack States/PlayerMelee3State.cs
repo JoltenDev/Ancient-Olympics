@@ -13,6 +13,8 @@ public class PlayerMelee3State : PlayerBaseState
         player.onAnimatorCrossFade?.Invoke("melee3", 0.25f);
         player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
 
+        player.SendPushRpc(player.MoveInput, player.transform.forward, player.transform.right, 3f); // Send force to server
+
         player.onAttackDurationCompleted += SwitchState;
     }
 

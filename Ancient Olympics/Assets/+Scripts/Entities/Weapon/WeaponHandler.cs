@@ -34,6 +34,7 @@ public class WeaponHandler : NetworkBehaviour
         hitbox = equippedWeapon.GetComponentInChildren<Hitbox>();
         if (!hitbox.hitboxAlwaysActive)
             hitbox.gameObject.SetActive(false);
+        hitbox.SetDamage(weaponData.damage, weaponData.knockbackStrength);
 
         // Assign events
         onSwingStarted += ActivateHitboxRpc;

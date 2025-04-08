@@ -124,8 +124,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 500
-  ownerClientId: 0
+  knockback: 10
   destroyOnHit: 1
+  hitboxAlwaysActive: 0
 --- !u!1 &4229522269649368439
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,7 +285,6 @@ MonoBehaviour:
   rigidBody: {fileID: 1842830475340524363}
   speed: 25
   rotationSpeed: 5
-  target: {fileID: 0}
 --- !u!1 &5904475461933961419
 GameObject:
   m_ObjectHideFlags: 0

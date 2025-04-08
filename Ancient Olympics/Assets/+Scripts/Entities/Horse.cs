@@ -10,6 +10,16 @@ public class Horse : NetworkEntity
 
     Vector3 moveDir;
 
+    void OnEnable()
+    {
+        GetComponentInParent<Player>().onAnimatorSetBool("IsMounted", true);
+    }
+
+    void OnDisable()
+    {
+        GetComponentInParent<Player>().onAnimatorSetBool("IsMounted", false);
+    }
+
     private void Update()
     {
         Rotate();

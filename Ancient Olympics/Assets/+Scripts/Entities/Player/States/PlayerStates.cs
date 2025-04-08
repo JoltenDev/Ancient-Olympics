@@ -14,7 +14,7 @@ public class PlayerStates
     public PlayerBaseState Dodge() => new PlayerDodgeState(player, this);
     public PlayerBaseState Catch() => new PlayerCatchState(player, this);
     public PlayerBaseState JavelinThrow() => new PlayerJavelinThrowState(player, this);
-    public PlayerBaseState Hit() => new PlayerHitState(player, this);
+    public PlayerBaseState Hit(ulong id, float knockback) => new PlayerHitState(player, this, id, knockback);
     public PlayerBaseState Death() => new PlayerDeathState(player, this);
     public PlayerBaseState Frozen(float time) => new PlayerFrozenState(player, this, time);
     public PlayerBaseState Swing() => new PlayerSwingState(player, this);
