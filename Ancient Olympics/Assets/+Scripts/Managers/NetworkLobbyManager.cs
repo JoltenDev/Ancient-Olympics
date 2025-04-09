@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 {
     [Header("UI Elements")]
-    [SerializeField] TMP_InputField ifIpAddress;
+    [SerializeField] TMP_InputField ifCode;
     [SerializeField] Button hostButton;
     [SerializeField] Button connectButton;
 
@@ -17,7 +17,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
     public void RegisterMenuItems(MenuItems menuItems)
     {
-        ifIpAddress = menuItems.ifIpAddress;
+        ifCode = menuItems.ifCode;
         hostButton = menuItems.hostButton;
         connectButton = menuItems.connectButton;
 
@@ -27,19 +27,12 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
     void StartHost()
     {
-        //SetHostIP();
-        NetworkManager.Singleton.StartHost();
-
-        if (NetworkManager.Singleton.IsServer && GameManager.Instance != null)
-        {
-            GameManager.Instance.SwitchState(GameManager.Instance.States.GameLobbyState());
-        }
+        NetworkRelay.Instance.CreateRelay();
     }
 
     void StartClient()
     {
-        //SetTransportIP();
-        NetworkManager.Singleton.StartClient();
+        NetworkRelay.Instance.JoinRelay(ifCode.text);
     }
 
     public override void OnNetworkSpawn()
@@ -93,41 +86,10 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         UIManager.Instance.UpdateLobbyUI(NetworkManager.ConnectedClients.Count);
     }
 
-    void SetHostIP()
-    {
-        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        if (transport != null)
-        {
-            transport.ConnectionData.Address = GetLocalIPAddress();
-            transport.ConnectionData.Port = (ushort)UnityEngine.Random.Range(7777, 7999);
-        }
-    }
-
-    void SetTransportIP()
-    {
-        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        if (transport != null && !string.IsNullOrEmpty(ifIpAddress.text))
-        {
-            string[] addressParts = ifIpAddress.text.Split(':');
-            transport.ConnectionData.Address = addressParts[0];
-            transport.ConnectionData.Port = (addressParts.Length > 1 && ushort.TryParse(addressParts[1], out ushort port)) ? port : (ushort)7777;
-        }
-    }
-
     public void LeaveServer()
     {
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("Scene_MainMenu");
-    }
-
-    string GetLocalIPAddress()
-    {
-        foreach (var netInterface in System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList)
-        {
-            if (netInterface.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                return netInterface.ToString();
-        }
-        return "127.0.0.1";
     }
 
     IEnumerator SendUsernameUIUpdates()

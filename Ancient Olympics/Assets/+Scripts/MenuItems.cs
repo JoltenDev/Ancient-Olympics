@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class MenuItems : MonoBehaviour
 {
     [Header("Items")]
-    public TMP_InputField ifIpAddress;
+    public TMP_InputField ifCode;
     public TMP_InputField ifName;
     public Button hostButton;
     public Button connectButton;

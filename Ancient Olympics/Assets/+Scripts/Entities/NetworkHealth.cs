@@ -10,10 +10,13 @@ public class NetworkHealth : NetworkBehaviour
     [SerializeField] NetworkVariable<bool> immune = new NetworkVariable<bool>();
     [SerializeField] NetworkVariable<bool> dead = new NetworkVariable<bool>();
 
+    ulong victimId;
+
     public float MaxHealth { get => maxHealth; }
     public NetworkVariable<float> CurrentHealth { get { return currentHealth; } }
     public NetworkVariable<bool> Immune { get { return immune; } }
     public NetworkVariable<bool> Dead { get { return dead; } }
+    public ulong VictimId { get => victimId; }
 
     public override void OnNetworkSpawn()
     {
@@ -33,9 +36,12 @@ public class NetworkHealth : NetworkBehaviour
         if (!IsServer) return;
         if (immune.Value) return;
         if (dead.Value) return;
+    
+        if (NetworkManager.Singleton.ConnectedClients[attackerId].PlayerObject.TryGetComponent<Player>(out Player attacker))
+            this.victimId = victimId;
 
-        if (NetworkManager.Singleton.ConnectedClients[victimId].PlayerObject.TryGetComponent<Player>(out Player player)) 
-            player.HitRpc(attackerId, knockback);
+        if (NetworkManager.Singleton.ConnectedClients[victimId].PlayerObject.TryGetComponent<Player>(out Player victim))
+            victim.HitRpc(attackerId, knockback);
 
         currentHealth.Value = Mathf.Max(currentHealth.Value - amount, 0);
         CheckDeath(victimId);

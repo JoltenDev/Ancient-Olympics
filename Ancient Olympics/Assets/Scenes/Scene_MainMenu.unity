@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 2bd8959f5fbd3644aa33af1a155fc147, type: 2}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1386,8 +1386,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u200B"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0d0b7b2417c2a704a990b8644252eef2, type: 2}
-  m_sharedMaterial: {fileID: 573966621479206513, guid: 0d0b7b2417c2a704a990b8644252eef2, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2310,7 +2310,7 @@ GameObject:
   - component: {fileID: 422482089}
   - component: {fileID: 422482088}
   m_Layer: 5
-  m_Name: IP Address InputField
+  m_Name: Code InputField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5020,7 +5020,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enter IP Address...
+  m_text: Enter Code...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0d0b7b2417c2a704a990b8644252eef2, type: 2}
   m_sharedMaterial: {fileID: 573966621479206513, guid: 0d0b7b2417c2a704a990b8644252eef2, type: 2}
@@ -8101,11 +8101,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a41530ea94990c3479273a6dac8dbf99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ifIpAddress: {fileID: 422482088}
+  ifCode: {fileID: 422482088}
   ifName: {fileID: 1179473031}
   hostButton: {fileID: 357948553}
   connectButton: {fileID: 1209728270}
   nameButton: {fileID: 84656606}
+  quitButton: {fileID: 188402381}
   managers:
   - {fileID: 3173893963320451864, guid: ea781f9d7f4c55648ab34b7b11ee7bec, type: 3}
   - {fileID: 8814513627923127699, guid: 49a17a68ec9589f4dae487627dc0ce0c, type: 3}

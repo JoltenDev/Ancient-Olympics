@@ -244,6 +244,12 @@ public class Player : NetworkEntity
     }
 
     [Rpc(SendTo.Server)]
+    public void SendPushRpc(ulong id, Vector3 forward, float strength)
+    {
+        NetworkManager.Singleton.ConnectedClients[id].PlayerObject.GetComponent<Player>().SendPushRpc(forward, strength);
+    }
+
+    [Rpc(SendTo.Server)]
     public void SpawnJavelinProjectileRpc(ulong ownerId, ulong targetId, float speed, Vector3 position, Vector3 direction)
     {
         GameObject projectilePrefab = WeaponHandler.projectiles[0];

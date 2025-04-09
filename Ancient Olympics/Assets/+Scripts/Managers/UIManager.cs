@@ -44,7 +44,10 @@ public class UIManager : Singleton<UIManager>
             }
 
             string canStart = playerCount > 1 ? "#59B359" : "#F85A5D";
-            LobbyMenu.GetComponentInChildren<TMP_Text>().text = $"Start <color={canStart}>[{playerCount}/4]</color>";
+            TMP_Text[] texts = LobbyMenu.GetComponentsInChildren<TMP_Text>();
+
+            texts[0].text = NetworkRelay.Instance.Code;
+            texts[1].text = $"Start <color={canStart}>[{playerCount}/4]</color>";
         }
     }
 
