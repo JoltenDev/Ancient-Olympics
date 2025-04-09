@@ -15,7 +15,7 @@ public class GameTransitionState : GameBaseState
     {
         LoadArenaScene();
 
-        UIManager.Instance.ActivateGlobalMessageRpc(); // Activate global message ui
+        UIManager.Instance.GlobalMessageRpc(true); // Activate global message ui
 
         Transition();
     }
@@ -47,7 +47,7 @@ public class GameTransitionState : GameBaseState
             NetworkSceneManager.Instance.ChangeScene("Scene_Arena", () =>
             {
                 ActionEvent.onGameStarted?.Invoke();
-                UIManager.Instance.ActivateHudUIRpc(); // Activate player's hud
+                UIManager.Instance.HealthUIRpc(true);
             });
         }
     }

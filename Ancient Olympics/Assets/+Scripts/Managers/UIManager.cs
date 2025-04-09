@@ -10,6 +10,19 @@ public class UIManager : Singleton<UIManager>
     public GameObject LobbyMenu { get; private set; }
     public GameObject Hud { get; set; }
 
+    public void RegisterHudItems(HudItems hud)
+    {
+        hud.leaveButton.onClick.AddListener(() =>
+        {
+            NetworkLobbyManager.Instance.LeaveServer();
+
+            if (IsHost)
+            {
+                LobbyMenu.SetActive(false);
+            }
+        });
+    }
+
     public void UpdateLobbyUI(int playerCount)
     {
         // Only update the UI if it's the host
@@ -23,7 +36,7 @@ public class UIManager : Singleton<UIManager>
 
                 LobbyMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
                 {
-                    if (NetworkLobbyManager.Instance.PlayerCount < 2) return;
+                    if (NetworkManager.Singleton.ConnectedClients.Count < 2) return;
 
                     GameManager.Instance.SwitchState(GameManager.Instance.States.GameTransitionState(false));
                     LobbyMenu.SetActive(false);
@@ -35,6 +48,11 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
+    public void DestroyLobbyMenu()
+    {
+        Destroy(LobbyMenu);
+    }
+
     [Rpc(SendTo.Everyone)]
     public void UpdatePlayerTimersRpc(string text)
     {
@@ -43,22 +61,27 @@ public class UIManager : Singleton<UIManager>
             Hud.GetComponent<HudItems>().globalMessage.GetComponentInChildren<TMP_Text>().text = text;
         }
     }
+    
+    [Rpc(SendTo.Everyone)]
+    public void HudUIRpc(bool status) => Hud.SetActive(status);
 
     [Rpc(SendTo.Everyone)]
-    public void ActivateHudUIRpc() => Hud.SetActive(true);
-
-    [Rpc(SendTo.Everyone)]
-    public void DeactivateHudUIRpc() => Hud.SetActive(false);
-
-    [Rpc(SendTo.Everyone)]
-    public void ActivateGlobalMessageRpc()
+    public void GlobalMessageRpc(bool status)
     {
-        Hud.GetComponent<HudItems>().globalMessage.SetActive(true);
+        Hud.GetComponent<HudItems>().globalMessage.SetActive(status);
     }
 
     [Rpc(SendTo.Everyone)]
-    public void DeactivateGlobalMessageRpc()
+    public void HealthUIRpc(bool status)
     {
-        Hud.GetComponent<HudItems>().globalMessage.SetActive(false);
+        Hud.GetComponent<HudItems>().health.SetActive(status);
+    }
+
+    public void ActivatePauseMenuRpc()
+    {
+        if (!Hud.GetComponent<HudItems>().pauseMenu.activeSelf)
+            Hud.GetComponent<HudItems>().pauseMenu.SetActive(true);
+        else
+            Hud.GetComponent<HudItems>().pauseMenu.SetActive(false);
     }
 }

@@ -87,6 +87,7 @@ public class Player : NetworkEntity
 
         inputHandler.Initialize();
         inputHandler.onMoveInput += SetMoveInput;
+        inputHandler.onEscapeInput += UIManager.Instance.ActivatePauseMenuRpc;
 
         // Register cooldowns
         CooldownHandler.RegisterTimer(CooldownHandler.timerStartedEvents, "Dodge", () => onDodgeCooldownStarted?.Invoke());

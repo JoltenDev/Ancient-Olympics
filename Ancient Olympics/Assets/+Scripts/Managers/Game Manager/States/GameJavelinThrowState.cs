@@ -1,5 +1,4 @@
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class GameJavelinThrowState : GameBaseState
@@ -59,7 +58,7 @@ public class GameJavelinThrowState : GameBaseState
 
     void BeginGame()
     {
-        gameManager.Timer.StartTimer("Round Active", 25);
+        gameManager.Timer.StartTimer("Round Active", 300);
 
         gameStarted = true;
 

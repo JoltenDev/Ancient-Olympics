@@ -7,20 +7,23 @@ public class NetworkAccount : Singleton<NetworkAccount>
 {
     public static string Username { get; private set; }
 
-    [SerializeField] TMP_InputField if_Name;
+    [SerializeField] TMP_InputField ifName;
     [SerializeField] Button nameButton;
 
-    void Start()
+    public void RegisterMenuItems(MenuItems menuItems)
     {
+        ifName = menuItems.ifName;
+        nameButton = menuItems.nameButton;
+
         nameButton.onClick.AddListener(SetUsername);
     }
 
     void SetUsername()
     {
-        if (!string.IsNullOrEmpty(if_Name.text))
+        if (!string.IsNullOrEmpty(ifName.text))
         {
-            Username = if_Name.text;
-            if_Name.transform.parent.gameObject.SetActive(false);
+            Username = ifName.text;
+            ifName.transform.parent.gameObject.SetActive(false);
         }
     }
 }

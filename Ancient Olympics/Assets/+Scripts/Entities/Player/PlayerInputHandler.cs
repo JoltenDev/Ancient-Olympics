@@ -3,35 +3,43 @@ using UnityEngine;
 
 public class PlayerInputHandler
 {
-    Controls controls;
+    Controls blockableControls;
+    Controls unblockableControls;
     public event Action<Vector2> onMoveInput;
     public event Action<string> onDodgeInput;
     public event Action<string> onAttackInput;
     public event Action<string> onCatchInput;
+    public event Action onEscapeInput;
 
     public void Initialize()
     {
-        if (controls != null) return;
+        if (blockableControls != null) return;
 
-        controls = new Controls();
+        blockableControls = new Controls();
+        unblockableControls = new Controls();
 
-        controls.Player.Move.performed += ctx => onMoveInput?.Invoke(ctx.ReadValue<Vector2>());
-        controls.Player.Move.canceled += ctx => onMoveInput?.Invoke(Vector2.zero);
+        blockableControls.Player.Move.performed += ctx => onMoveInput?.Invoke(ctx.ReadValue<Vector2>());
+        blockableControls.Player.Move.canceled += ctx => onMoveInput?.Invoke(Vector2.zero);
 
-        controls.Player.OnSpace.performed += ctx => onDodgeInput?.Invoke("Dodge");
-        controls.Player.OnLeftClick.performed += ctx => onAttackInput?.Invoke("Attack");
-        controls.Player.OnRightClick.performed += ctx => onCatchInput?.Invoke("Catch");
+        blockableControls.Player.OnSpace.performed += ctx => onDodgeInput?.Invoke("Dodge");
+        blockableControls.Player.OnLeftClick.performed += ctx => onAttackInput?.Invoke("Attack");
+        blockableControls.Player.OnRightClick.performed += ctx => onCatchInput?.Invoke("Catch");
 
-        controls.Enable();
+        unblockableControls.Player.OnEscape.performed += ctx => onEscapeInput?.Invoke();
+
+        blockableControls.Enable();
+        unblockableControls.Enable();
     }
 
-    public void UnblockInput() => controls?.Enable();
-    public void BlockInput() => controls?.Disable();
+    public void UnblockInput() => blockableControls?.Enable();
+    public void BlockInput() => blockableControls?.Disable();
 
     public void Dispose()
     {
-        if (controls == null) return;
+        if (blockableControls == null) return;
+        if (unblockableControls == null) return;
 
-        controls.Disable();
+        blockableControls.Disable();
+        unblockableControls.Dispose();
     }
 }

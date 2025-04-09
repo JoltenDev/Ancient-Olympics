@@ -40,7 +40,7 @@ public class GameAssassinationState : GameBaseState
 
     void BeginGame()
     {
-        gameManager.Timer.StartTimer("Round Active", 25);
+        gameManager.Timer.StartTimer("Round Active", 300);
         gameManager.AssignWeaponToEveryPlayer(1, false, true);
     }
 

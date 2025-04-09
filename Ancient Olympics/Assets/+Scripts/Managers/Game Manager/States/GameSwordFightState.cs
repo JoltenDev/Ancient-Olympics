@@ -35,7 +35,7 @@ public class GameSwordFightState : GameBaseState
 
     void BeginGame()
     {
-        gameManager.Timer.StartTimer("Round Active", 25);
+        gameManager.Timer.StartTimer("Round Active", 300);
 
         gameManager.AssignWeaponToEveryPlayer(0);
     }

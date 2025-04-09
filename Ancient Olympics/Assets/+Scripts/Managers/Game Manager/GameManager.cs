@@ -41,7 +41,7 @@ public class GameManager : Singleton<GameManager>
     public Action onBufferCompleted;
     #endregion
 
-    void Start()
+    void OnEnable()
     {
         states = new GameStates(this);
 
@@ -62,6 +62,11 @@ public class GameManager : Singleton<GameManager>
     public override void OnDestroy()
     {
         onRoundActiveCompleted -= RoundTimerCompleted;
+    }
+
+    public void RegisterMenuItems(MenuItems menuItems)
+    {
+        menuItems.quitButton.onClick.AddListener(ApplicationQuit);
     }
 
     void Update()
@@ -162,13 +167,13 @@ public class GameManager : Singleton<GameManager>
     {
         if (!IsServer) return;
 
-        foreach (var player in NetworkLobbyManager.Instance.playersInServer.Keys)
+        foreach (var player in NetworkManager.ConnectedClients.Keys)
         {
             float spawn_x = UnityEngine.Random.Range(-3f, 3.25f);
             float spawn_z = UnityEngine.Random.Range(-1.5f, 1.5f);
             Vector3 spawnPos = new Vector3(spawn_x, 0.4f, spawn_z);
 
-            var playerObject = NetworkLobbyManager.Instance.playersInServer[player];
+            var playerObject = NetworkLobbyManager.Instance.NetworkManager.ConnectedClients[player].PlayerObject;
             var currentScale = playerObject.transform.localScale;
             playerObject.GetComponent<NetworkTransform>().Teleport(spawnPos, Quaternion.identity, currentScale);
         }

@@ -1,27 +1,26 @@
-using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 {
     [Header("UI Elements")]
-    [SerializeField] TMP_InputField if_IPAddress;
+    [SerializeField] TMP_InputField ifIpAddress;
     [SerializeField] Button hostButton;
     [SerializeField] Button connectButton;
 
     [SerializeField] GameObject playerPrefab;
 
-    public Dictionary<ulong, GameObject> playersInServer = new Dictionary<ulong, GameObject>();
-    public int PlayerCount { get => playersInServer.Count; }
-    public static event Action<int> OnPlayerCountChanged;
-
-    void Start()
+    public void RegisterMenuItems(MenuItems menuItems)
     {
+        ifIpAddress = menuItems.ifIpAddress;
+        hostButton = menuItems.hostButton;
+        connectButton = menuItems.connectButton;
+
         hostButton.onClick.AddListener(StartHost);
         connectButton.onClick.AddListener(StartClient);
     }
@@ -34,8 +33,6 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         if (NetworkManager.Singleton.IsServer && GameManager.Instance != null)
         {
             GameManager.Instance.SwitchState(GameManager.Instance.States.GameLobbyState());
-            OnPlayerCountChanged += UIManager.Instance.UpdateLobbyUI;
-            UpdatePlayerCount();  // Initial update when host starts
         }
     }
 
@@ -47,7 +44,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer && NetworkManager.Singleton != null)
+        if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
@@ -56,49 +53,44 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
     public override void OnDestroy()
     {
-        if (IsServer && NetworkManager.Singleton != null)
+        if (NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
         }
     }
 
-    public override void OnNetworkDespawn()
-    {
-        base.OnNetworkDespawn();
-    }
-
-    void OnClientConnected(ulong clientId)
+    void OnClientConnected(ulong id)
     {
         if (!IsServer) return;
 
         // Spawn player only on the server
         GameObject player = Instantiate(playerPrefab, new Vector3(0, 2, 0), Quaternion.identity);
-        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-        playersInServer[clientId] = player;
+        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(id);
         DontDestroyOnLoad(player);
 
-        UpdatePlayerCount(); // Update player count
+        UIManager.Instance.UpdateLobbyUI(NetworkManager.ConnectedClients.Count);
 
         StartCoroutine(SendUsernameUIUpdates());
     }
 
-    void OnClientDisconnected(ulong clientId)
+    void OnClientDisconnected(ulong id)
     {
-        if (!IsServer) return;
-
-        if (playersInServer.TryGetValue(clientId, out GameObject player))
+        if (id == NetworkManager.Singleton.LocalClientId)
         {
-            Destroy(player);
-            playersInServer.Remove(clientId);
+            UIManager.Instance.DestroyLobbyMenu();
+
+            hostButton.onClick.RemoveAllListeners();
+            connectButton.onClick.RemoveAllListeners();
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+
+            SceneManager.LoadScene("Scene_MainMenu");
         }
 
-        UpdatePlayerCount();
-    }
+        if (!IsServer) return;
 
-    void UpdatePlayerCount()
-    {
-        OnPlayerCountChanged?.Invoke(PlayerCount);
+        UIManager.Instance.UpdateLobbyUI(NetworkManager.ConnectedClients.Count);
     }
 
     void SetHostIP()
@@ -114,12 +106,18 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
     void SetTransportIP()
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        if (transport != null && !string.IsNullOrEmpty(if_IPAddress.text))
+        if (transport != null && !string.IsNullOrEmpty(ifIpAddress.text))
         {
-            string[] addressParts = if_IPAddress.text.Split(':');
+            string[] addressParts = ifIpAddress.text.Split(':');
             transport.ConnectionData.Address = addressParts[0];
             transport.ConnectionData.Port = (addressParts.Length > 1 && ushort.TryParse(addressParts[1], out ushort port)) ? port : (ushort)7777;
         }
+    }
+
+    public void LeaveServer()
+    {
+        NetworkManager.Singleton.Shutdown();
+        SceneManager.LoadScene("Scene_MainMenu");
     }
 
     string GetLocalIPAddress()
@@ -134,7 +132,7 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
     IEnumerator SendUsernameUIUpdates()
     {
-        yield return new WaitForSeconds(0.1f); // Wait a frame or two
+        yield return new WaitForSeconds(1);
         foreach (var id in NetworkManager.Singleton.ConnectedClients.Keys)
         {
             var player_ = NetworkManager.Singleton.ConnectedClients[id].PlayerObject.GetComponentInParent<Player>();

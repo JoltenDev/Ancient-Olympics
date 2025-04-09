@@ -38,7 +38,7 @@ public class GameJoustState : GameBaseState
 
     void BeginGame()
     {
-        gameManager.Timer.StartTimer("Round Active", 25);
+        gameManager.Timer.StartTimer("Round Active", 300);
 
         HandleHorsesForEveryPlayer();
         gameManager.AssignWeaponToEveryPlayer(3);

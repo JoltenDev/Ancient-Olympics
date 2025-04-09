@@ -441,7 +441,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3190950426589149833, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6103497782302959024, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
       propertyPath: m_AnchorMax.x
@@ -540,6 +540,10 @@ PrefabInstance:
       value: Global Message
       objectReference: {fileID: 0}
     - target: {fileID: 6574175008618444144, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8881839298199618245, guid: 7eada3f39de868d45af9337815aa06f2, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}

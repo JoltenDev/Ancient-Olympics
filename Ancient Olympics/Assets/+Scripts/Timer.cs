@@ -52,7 +52,8 @@ public class Timer
         activeTimers[timerName] = cts;
 
         // Invoke timer started event and start timer
-        timerStartedEvents[timerName]?.Invoke();
+        if (timerStartedEvents.ContainsKey(timerName))
+            timerStartedEvents[timerName]?.Invoke();
         RunTimer(timerName, duration, cts.Token);
     }
 
@@ -85,7 +86,9 @@ public class Timer
             if (!token.IsCancellationRequested)
             {
                 timerRemainingTimes[timerName] = 0;
-                timerCompletedEvents[timerName]?.Invoke();
+
+                if (timerCompletedEvents.ContainsKey(timerName))
+                    timerCompletedEvents[timerName]?.Invoke();
             }
         }
         catch (TaskCanceledException)

@@ -62,6 +62,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""OnEscape"",
+                    ""type"": ""Button"",
+                    ""id"": ""5b8f7f34-a1e7-40ad-886b-2bc20124e247"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -152,6 +161,17 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""OnRightClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""07159a08-51cb-4ab3-b176-99190ccb3195"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""OnEscape"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -164,6 +184,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_OnLeftClick = m_Player.FindAction("OnLeftClick", throwIfNotFound: true);
         m_Player_OnRightClick = m_Player.FindAction("OnRightClick", throwIfNotFound: true);
+        m_Player_OnEscape = m_Player.FindAction("OnEscape", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -234,6 +255,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_OnLeftClick;
     private readonly InputAction m_Player_OnRightClick;
+    private readonly InputAction m_Player_OnEscape;
     public struct PlayerActions
     {
         private @Controls m_Wrapper;
@@ -242,6 +264,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         public InputAction @Move => m_Wrapper.m_Player_Move;
         public InputAction @OnLeftClick => m_Wrapper.m_Player_OnLeftClick;
         public InputAction @OnRightClick => m_Wrapper.m_Player_OnRightClick;
+        public InputAction @OnEscape => m_Wrapper.m_Player_OnEscape;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -263,6 +286,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @OnRightClick.started += instance.OnOnRightClick;
             @OnRightClick.performed += instance.OnOnRightClick;
             @OnRightClick.canceled += instance.OnOnRightClick;
+            @OnEscape.started += instance.OnOnEscape;
+            @OnEscape.performed += instance.OnOnEscape;
+            @OnEscape.canceled += instance.OnOnEscape;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -279,6 +305,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @OnRightClick.started -= instance.OnOnRightClick;
             @OnRightClick.performed -= instance.OnOnRightClick;
             @OnRightClick.canceled -= instance.OnOnRightClick;
+            @OnEscape.started -= instance.OnOnEscape;
+            @OnEscape.performed -= instance.OnOnEscape;
+            @OnEscape.canceled -= instance.OnOnEscape;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -302,5 +331,6 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnOnLeftClick(InputAction.CallbackContext context);
         void OnOnRightClick(InputAction.CallbackContext context);
+        void OnOnEscape(InputAction.CallbackContext context);
     }
 }
