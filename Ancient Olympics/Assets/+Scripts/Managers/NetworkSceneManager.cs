@@ -18,8 +18,6 @@ public class NetworkSceneManager : Singleton<NetworkSceneManager>
 
         if (status == SceneEventProgressStatus.Started)
         {
-            Debug.Log($"Scene change started: {scene}");
-
             // Only the server listens for the load event
             NetworkManager.Singleton.SceneManager.OnSceneEvent += HandleSceneEvent;
 
@@ -27,7 +25,6 @@ public class NetworkSceneManager : Singleton<NetworkSceneManager>
             {
                 if (sceneEventArgs.SceneName == scene && sceneEventArgs.SceneEventType == SceneEventType.LoadComplete)
                 {
-                    Debug.Log($"Scene loaded: {scene}");
                     onSceneLoaded?.Invoke();  // Notify when fully loaded
 
                     // Unsubscribe to prevent multiple calls

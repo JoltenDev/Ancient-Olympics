@@ -15,4 +15,5 @@ public class GameStates
     public GameBaseState GameAssassinationState() { return new GameAssassinationState(gameManager, this); }
     public GameBaseState GameJoustState() { return new GameJoustState(gameManager, this); }
     public GameBaseState GameSwordFightState() { return new GameSwordFightState(gameManager, this); }
+    public GameBaseState GameEndState() { return new GameEndState(gameManager, this); }
 }

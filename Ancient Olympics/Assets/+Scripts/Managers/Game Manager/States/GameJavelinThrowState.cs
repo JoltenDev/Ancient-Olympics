@@ -4,7 +4,7 @@ using UnityEngine;
 public class GameJavelinThrowState : GameBaseState
 {
     float savedTime = Time.time;
-    float tick = 6f;
+    float tick = 3f;
 
     bool gameStarted = false;
 
@@ -67,7 +67,7 @@ public class GameJavelinThrowState : GameBaseState
         gameManager.SetJavelinWielderRpc(client.ClientId);
     }
 
-    void PlayerDied(NetworkListEvent<ulong> changeEvent)
+    void PlayerDied()
     {
         gameManager.SetJavelinAddendRpc(0);
     }

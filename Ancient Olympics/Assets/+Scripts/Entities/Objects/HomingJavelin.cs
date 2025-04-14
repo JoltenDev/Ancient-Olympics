@@ -8,7 +8,7 @@ public class HomingJavelin : NetworkEntity
 
     public override void OnNetworkSpawn()
     {
-        if (!IsOwner) return; // Ensure only the owner moves it
+        if (!IsOwner) return;
     }
 
     public override void OnDestroy()
@@ -23,29 +23,46 @@ public class HomingJavelin : NetworkEntity
         }
     }
 
-    void FixedUpdate()
+    protected override void FixedUpdate()
     {
-        if (!IsOwner || target == null) return;
+        if (target == null) return;
 
-        Vector3 direction = (target.position - transform.position).normalized;
-        direction.y = 0f;
+        base.FixedUpdate();
 
-        float distance = Vector3.Distance(transform.position, target.position);
-        float stoppingDistance = 1.1f;
-
-        if (distance > stoppingDistance)
+        if (IsOwner)
         {
-            // Move towards the target only if outside stopping range
-            SendMove(direction, transform.position);
-        } 
-        else {
-            SendMove(-direction, transform.position);
-        }
+            // Position
+            Vector3 direction = (target.position - transform.position).normalized;
+            direction.y = 0f;
 
-        SendRotation(direction);
+            float distance = Vector3.Distance(transform.position, target.position);
+            float stoppingDistance = 1.1f;
+
+            if (distance > stoppingDistance)
+            {
+                // Move towards the target only if outside stopping range
+                Vector3 targetVelocity = direction * speed;
+                rigidBody.linearVelocity = Vector3.Lerp(rigidBody.linearVelocity, targetVelocity, 5 * Time.fixedDeltaTime);
+            }
+            else
+            {
+                Vector3 targetVelocity = -direction * speed;
+                rigidBody.linearVelocity = Vector3.Lerp(rigidBody.linearVelocity, targetVelocity, 5 * Time.fixedDeltaTime);
+            }
+            SendPositionRpc(rigidBody.position, rigidBody.linearVelocity);
+
+
+            // Rotation
+            if (direction != Vector3.zero)
+            {
+                ApplyRotate(direction);
+                SendRotationRpc(rigidBody.rotation, rigidBody.angularVelocity);
+            }
+        }
     }
 
-    public void AddSpeed(float amount)
+    [Rpc(SendTo.Everyone)]
+    public void AddSpeedRpc(float amount)
     {
         speed += amount;
     }

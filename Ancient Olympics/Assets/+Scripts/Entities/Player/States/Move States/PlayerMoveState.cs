@@ -28,7 +28,8 @@ public class PlayerMoveState : PlayerBaseState
 
     public override void FixedUpdate()
     {
-        player.SendMove(relativeDirection, player.transform.position); // Send movement to server
+        Vector3 targetVelocity = relativeDirection * player.Speed;
+        player.Rigidbody.linearVelocity = Vector3.Lerp(player.Rigidbody.linearVelocity, targetVelocity, 5 * Time.fixedDeltaTime);
     }
 
     public override void Exit()

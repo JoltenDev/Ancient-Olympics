@@ -12,7 +12,7 @@ public class PlayerJavelinThrowState : PlayerBaseState
         player.WeaponHandler.onSwingStarted?.Invoke();
 
         player.onAnimatorCrossFade?.Invoke("throw", 0.25f);
-        GameManager.Instance.SetJavelinAddendRpc(GameManager.Instance.JavelinSpeedAddend.Value + 5);
+        GameManager.Instance.SetJavelinAddendRpc(GameManager.Instance.JavelinSpeedAddend.Value + 1);
 
         player.CooldownHandler.StartTimer("Attack Duration", .5f);
         player.onAttackDurationCompleted += SwitchState;

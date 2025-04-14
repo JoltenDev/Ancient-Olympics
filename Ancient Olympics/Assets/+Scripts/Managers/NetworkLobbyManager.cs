@@ -1,5 +1,4 @@
 using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -73,8 +72,12 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
         {
             UIManager.Instance.DestroyLobbyMenu();
 
-            hostButton.onClick.RemoveAllListeners();
-            connectButton.onClick.RemoveAllListeners();
+            if (hostButton != null)
+                hostButton.onClick.RemoveAllListeners();
+
+            if (connectButton != null)
+                connectButton.onClick.RemoveAllListeners();
+
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
 
@@ -83,7 +86,8 @@ public class NetworkLobbyManager : Singleton<NetworkLobbyManager>
 
         if (!IsServer) return;
 
-        UIManager.Instance.UpdateLobbyUI(NetworkManager.ConnectedClients.Count);
+        if (GameManager.Instance.CurrentState == GameManager.Instance.States.GameLobbyState())
+            UIManager.Instance.UpdateLobbyUI(NetworkManager.ConnectedClients.Count);
     }
 
     public void LeaveServer()

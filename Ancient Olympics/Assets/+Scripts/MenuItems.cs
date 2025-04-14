@@ -15,11 +15,24 @@ public class MenuItems : MonoBehaviour
 
     [Header("Managers")]
     [SerializeField] List<GameObject> managers = new List<GameObject>();
+    List<GameObject> managerClones = new List<GameObject>();
 
     void OnEnable()
     {
+        if (managerClones.Count > 0)
+        {
+            foreach (GameObject clone in managerClones)
+            {
+                Destroy(clone);
+            }
+        }
+        managerClones.Clear();
+
         foreach (GameObject manager in managers)
-            Instantiate(manager);
+        {
+            var clone = Instantiate(manager);
+            managerClones.Add(clone);
+        }
 
         NetworkLobbyManager.Instance.RegisterMenuItems(this);
         NetworkAccount.Instance.RegisterMenuItems(this);

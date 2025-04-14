@@ -27,6 +27,7 @@ public class GameSwordFightState : GameBaseState
     public override void Exit()
     {
         gameManager.startMessage = "";
+        gameManager.gameEnded = true;
 
         gameManager.AssignWeaponToEveryPlayer(0, true);
 

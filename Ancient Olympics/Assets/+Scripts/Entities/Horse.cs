@@ -8,8 +8,6 @@ public class Horse : NetworkEntity
 
     float currentSpeed;
 
-    Vector3 moveDir;
-
     void OnEnable()
     {
         GetComponentInParent<Player>().onAnimatorSetBool("IsMounted", true);
@@ -20,21 +18,21 @@ public class Horse : NetworkEntity
         GetComponentInParent<Player>().onAnimatorSetBool("IsMounted", false);
     }
 
-    private void Update()
+    protected override void FixedUpdate()
     {
-        Rotate();
-    }
-
-    void FixedUpdate()
-    {
-        if (!IsOwner) return;
-
-        // Smooth speed transition
-        currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
-        moveDir = transform.forward * currentSpeed;
+        base.FixedUpdate();
 
         // Send to server: movement vector and current position
-        SendMove(moveDir, transform.position);
+        if (IsOwner)
+        {
+            // Smooth speed transition
+            currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
+
+            Vector3 targetVelocity = transform.forward * speed;
+            rigidBody.linearVelocity = Vector3.Lerp(rigidBody.linearVelocity, targetVelocity, 5 * Time.fixedDeltaTime);
+
+            Rotate();
+        }
     }
 
     void Rotate()
@@ -50,8 +48,8 @@ public class Horse : NetworkEntity
                 // Smooth the current forward direction toward the target direction
                 Vector3 smoothDirection = Vector3.Slerp(transform.forward, targetDir, Time.deltaTime * rotationSpeed);
 
-                // Send smoothed direction
-                SendRotation(smoothDirection);
+                ApplyRotate(smoothDirection);
+                SendRotationRpc(rigidBody.rotation, rigidBody.angularVelocity);
             }
         }
     }

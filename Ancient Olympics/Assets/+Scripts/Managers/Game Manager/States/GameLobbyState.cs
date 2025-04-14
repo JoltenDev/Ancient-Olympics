@@ -30,8 +30,4 @@ public class GameLobbyState : GameBaseState
     public override void Exit()
     {
     }
-
-    void SwitchState()
-    {
-    }
 }

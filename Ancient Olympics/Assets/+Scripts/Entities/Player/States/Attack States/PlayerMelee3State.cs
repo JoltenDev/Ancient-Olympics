@@ -14,7 +14,6 @@ public class PlayerMelee3State : PlayerBaseState
         player.CooldownHandler.StartTimer("Attack Duration", 0.75f);
 
         player.SendPushRpc(player.MoveInput, player.transform.forward, player.transform.right, 3f); // Send force to server
-        player.SendPushRpc(player.NetworkHealth.VictimId, player.transform.forward, 2f);
 
         player.onAttackDurationCompleted += SwitchState;
     }

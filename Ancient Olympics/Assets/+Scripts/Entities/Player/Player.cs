@@ -118,6 +118,7 @@ public class Player : NetworkEntity
         inputHandler.onMoveInput -= SetMoveInput;
         inputHandler.Dispose();
 
+        CooldownHandler.StopAllTimers();
         CooldownHandler.Dispose();
 
         onAnimatorSetBool -= networkAnimatorSync.AnimateSetBoolRpc;
@@ -135,14 +136,19 @@ public class Player : NetworkEntity
         CurrentState.Update();
     }
 
-    void FixedUpdate()
+    protected override void FixedUpdate()
     {
-        if (!IsOwner) return;
+        base.FixedUpdate();
 
-        CurrentState.FixedUpdate();
+        if (IsOwner)
+        {
+            CurrentState.FixedUpdate();
 
-        if (!health.Dead.Value)
-            Rotate();
+            if (!health.Dead.Value)
+                Rotate();
+
+            SendPositionRpc(rigidBody.position, rigidBody.linearVelocity);
+        }
     }
 
     void SetMoveInput(Vector2 input) => moveInput = input;
@@ -160,8 +166,13 @@ public class Player : NetworkEntity
             Vector3 direction = (hit.point - transform.position).normalized;
             direction.y = 0;
 
-            // (From local client [messenger]) Send rotation direction to server
-            SendRotation(direction * Time.fixedDeltaTime);
+            if (direction != Vector3.zero)
+            {
+                ApplyRotate(direction);
+
+                // (From local client [messenger]) Send rotation direction to server
+                SendRotationRpc(rigidBody.rotation, rigidBody.angularVelocity);
+            }
         }
     }
 
@@ -211,7 +222,6 @@ public class Player : NetworkEntity
     /// <param name="forward">The forward direction of the player.</param>
     /// <param name="right">The rightward direction of the player.</param>
     /// <param name="strength">The magnitude of the force to apply.</param>
-    [Rpc(SendTo.Server)]
     public void SendPushRpc(Vector2 input, Vector3 forward, Vector3 right, float strength)
     {
         forward.y = 0;
@@ -222,8 +232,7 @@ public class Player : NetworkEntity
         Vector3 direction = (right * input.x) + (forward * input.y);
 
         rigidBody.AddForce(direction * strength, ForceMode.Impulse);
-
-        SyncPositionRpc(rigidBody.position);
+        //SendPositionRpc(rigidBody.position, rigidBody.linearVelocity);
     }
 
     /// <summary>
@@ -232,21 +241,13 @@ public class Player : NetworkEntity
     /// <param name="forward">The forward direction of the player.</param>
     /// <param name="right">The rightward direction of the player.</param>
     /// <param name="strength">The magnitude of the force to apply.</param>
-    [Rpc(SendTo.Server)]
     public void SendPushRpc(Vector3 forward, float strength)
     {
         forward.y = 0;
         forward.Normalize();
 
         rigidBody.AddForce(forward * strength, ForceMode.Impulse);
-
-        SyncPositionRpc(rigidBody.position);
-    }
-
-    [Rpc(SendTo.Server)]
-    public void SendPushRpc(ulong id, Vector3 forward, float strength)
-    {
-        NetworkManager.Singleton.ConnectedClients[id].PlayerObject.GetComponent<Player>().SendPushRpc(forward, strength);
+        //SendPositionRpc(rigidBody.position, rigidBody.linearVelocity);
     }
 
     [Rpc(SendTo.Server)]
@@ -260,7 +261,7 @@ public class Player : NetworkEntity
         NetworkObject networkObj = projectilePrefab.GetComponent<NetworkObject>();
         var clone = networkObj.InstantiateAndSpawn(NetworkManager.Singleton, ownerId, false, false, false, spawnPos, spawnRot);
 
-        clone.GetComponent<HomingJavelin>().AddSpeed(speed);
+        clone.GetComponent<HomingJavelin>().AddSpeedRpc(speed);
         clone.GetComponentInChildren<HomingJavelin>().SetTargetRpc(targetId); // Target other client
     }
 
@@ -306,9 +307,6 @@ public class Player : NetworkEntity
         ulong clientId = rpcParams.Receive.SenderClientId;
         this.username = username;
         gameObject.name = $"Player ({username})";
-
-        Debug.Log($"Client {clientId} set their username to {username}");
-        // Store the username for this client in a dictionary (optional)
     }
 
     [Rpc(SendTo.Everyone)]

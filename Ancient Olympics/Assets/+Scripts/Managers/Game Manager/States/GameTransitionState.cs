@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class GameTransitionState : GameBaseState
 {
-    enum Modes { JavelinThrowing, Assassination, Jousting, SwordFighting }
     bool transitionFromRound;
 
     public GameTransitionState(GameManager gameManager, GameStates states, bool transitionFromRound = true) : base(gameManager, states)
@@ -35,7 +34,7 @@ public class GameTransitionState : GameBaseState
 
     public override void Exit()
     {
-        gameManager.onTransitionCompleted -= SelectGameMode;
+        gameManager.onTransitionCompleted -= gameManager.SwitchRandomGamemode;
         gameManager.RepositionPlayersRpc();
     }
 
@@ -57,7 +56,7 @@ public class GameTransitionState : GameBaseState
         if (!transitionFromRound)
         {
             gameManager.Timer.StartTimer("Transition", 5); // Start timer til gamemode starts
-            gameManager.onTransitionCompleted += SelectGameMode;
+            gameManager.onTransitionCompleted += gameManager.SwitchRandomGamemode;
         }
         else
         {
@@ -68,39 +67,25 @@ public class GameTransitionState : GameBaseState
 
             void StartTransition()
             {
-                if (GameManager.Instance.DeadPlayers.Count > 0)
-                    GameManager.Instance.RevivePlayersRpc(); // Revive all players for next round
-
-                if (GameManager.Instance.IsServer)
-                    GameManager.Instance.DeadPlayers.Clear(); // Clear dead players
-
-                gameManager.Timer.StartTimer("Transition", 5); // Start timer til gamemode starts (Transition -> Selection)
-                gameManager.onTransitionCompleted += SelectGameMode;
-                transitionFromRound = false;
+                if (gameManager.DeadPlayers.Count() > 0)
+                {
+                    gameManager.RevivePlayersRpc();
+                    gameManager.DeadPlayers.Clear(); // Clear dead players
+                }
+                if (!gameManager.gameEnded)
+                {
+                    gameManager.Timer.StartTimer("Transition", 5); // Start timer til gamemode starts (Transition -> Selection)
+                    gameManager.onTransitionCompleted += gameManager.SwitchRandomGamemode;
+                    transitionFromRound = false;
+                }
+                else
+                {
+                    NetworkSceneManager.Instance.ChangeScene("Scene_Win");
+                    SwitchState(states.GameEndState());
+                }
 
                 gameManager.onBufferCompleted -= StartTransition;
             }
-        }
-    }
-
-    void SelectGameMode()
-    {
-        var mode = (Modes) Random.Range(0, 4);
-
-        switch (mode)
-        {
-            case Modes.JavelinThrowing:
-                SwitchState(states.GameJavelinThrowState());
-                break;
-            case Modes.Assassination:
-                SwitchState(states.GameAssassinationState());
-                break;
-            case Modes.Jousting:
-                SwitchState(states.GameJoustState());
-                break;
-            case Modes.SwordFighting:
-                SwitchState(states.GameSwordFightState());
-                break;
         }
     }
 }

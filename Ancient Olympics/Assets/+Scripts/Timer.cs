@@ -115,4 +115,19 @@ public class Timer
             timerRemainingTimes.Remove(timerName);
         }
     }
+
+    /// <summary>
+    /// Stops and cleans up all active timers.
+    /// </summary>
+    public void StopAllTimers()
+    {
+        foreach (var cts in activeTimers.Values)
+        {
+            cts.Cancel();
+            cts.Dispose();
+        }
+
+        activeTimers.Clear();
+        timerRemainingTimes.Clear();
+    }
 }

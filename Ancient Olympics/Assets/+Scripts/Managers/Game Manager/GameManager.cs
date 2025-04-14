@@ -1,6 +1,5 @@
 using UnityEngine;
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using System;
 using System.Collections.Generic;
 
@@ -13,20 +12,26 @@ public class GameManager : Singleton<GameManager>
     Timer timer = new Timer();
 
     List<NetworkObject> spawnedNpcs = new List<NetworkObject>();
-    [SerializeField] NetworkList<ulong> deadPlayers = new NetworkList<ulong>();
+    [SerializeField] JList<ulong> deadPlayers = new JList<ulong>();
 
     NetworkVariable<ulong> currentJavelinWielder = new NetworkVariable<ulong>();
     NetworkVariable<float> javelinSpeedAddend = new NetworkVariable<float>();
 
+    Dictionary<ulong, int> roundWins = new Dictionary<ulong, int>();
+    [SerializeField] List<string> savedGamemodes = new List<string>();
+    List<string> gamemodes = new List<string>();
+
     public string startMessage;
+    public bool gameEnded = false;
 
     #region Getters/Setters
     public GameStates States { get => states; }
     public Timer Timer { get => timer; }
-    public NetworkList<ulong> DeadPlayers { get => deadPlayers; }
+    public JList<ulong> DeadPlayers { get => deadPlayers; }
     public GameBaseState CurrentState { get => currentState; set => currentState = value; }
     public NetworkVariable<ulong> CurrentJavelinWielder { get => currentJavelinWielder; }
     public NetworkVariable<float> JavelinSpeedAddend { get => javelinSpeedAddend; }
+    public Dictionary<ulong, int> RoundWins { get => roundWins; }
     #endregion
 
     #region Actions
@@ -34,6 +39,8 @@ public class GameManager : Singleton<GameManager>
     public Action onGameStartingCompleted;
     public Action onRoundActiveStarted;
     public Action onRoundActiveCompleted;
+    public Action onGameEndingStarted;
+    public Action onGameEndingCompleted;
 
     public Action onTransitionStarted;
     public Action onTransitionCompleted;
@@ -45,10 +52,14 @@ public class GameManager : Singleton<GameManager>
     {
         states = new GameStates(this);
 
+        ResetGamemodes();
+
         Timer.RegisterTimer(Timer.timerStartedEvents, "Game Starting", () => { onGameStartingStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Game Starting", () => { onGameStartingCompleted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerStartedEvents, "Round Active", () => { onRoundActiveStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Round Active", () => { onRoundActiveCompleted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerStartedEvents, "Game Ending", () => { onGameEndingStarted?.Invoke(); });
+        Timer.RegisterTimer(Timer.timerCompletedEvents, "Game Ending", () => { onGameEndingCompleted?.Invoke(); });
 
         Timer.RegisterTimer(Timer.timerStartedEvents, "Transition", () => { onTransitionStarted?.Invoke(); });
         Timer.RegisterTimer(Timer.timerCompletedEvents, "Transition", () => { onTransitionCompleted?.Invoke(); });
@@ -62,6 +73,10 @@ public class GameManager : Singleton<GameManager>
     public override void OnDestroy()
     {
         onRoundActiveCompleted -= RoundTimerCompleted;
+        deadPlayers.OnListChanged -= CheckPlayerCount;
+
+        Timer.StopAllTimers();
+        Timer.Dispose();
     }
 
     public void RegisterMenuItems(MenuItems menuItems)
@@ -88,6 +103,14 @@ public class GameManager : Singleton<GameManager>
             if (time > 0)
                 UIManager.Instance.UpdatePlayerTimersRpc($"Time left: {time:F1}s");
         }
+
+        if (Timer.timerRemainingTimes.ContainsKey("Game Ending"))
+        {
+            float time = Timer.timerRemainingTimes["Game Ending"];
+
+            if (time > 0)
+                UIManager.Instance.UpdatePlayerTimersRpc($"The mightiest warrior...");
+        }
     }
 
     /// <summary>
@@ -108,15 +131,17 @@ public class GameManager : Singleton<GameManager>
     /// Checks the number of dead and connected players to determine if only one player remains alive.
     /// </summary>
     /// <param name="changeEvent">The event triggered by a change in the network list of connected players.</param>
-    void CheckPlayerCount(NetworkListEvent<ulong> changeEvent)
+    void CheckPlayerCount()
     {
         // This is invoked twice, may cause future problems
 
         if (!IsServer) return;
         if (currentState == states.GameTransitionState()) return;
 
-        if (DeadPlayers.Count == NetworkManager.Singleton.ConnectedClients.Count - 1) // If the amount of dead players is equal to the amount of connect clients - 1
+        if (DeadPlayers.Count() == NetworkManager.Singleton.ConnectedClients.Count - 1) // If the amount of dead players is equal to the amount of connect clients - 1
         {
+            Debug.Log(deadPlayers.Count());
+
             ulong alivePlayerId = 100;
 
             foreach (var id in NetworkManager.Singleton.ConnectedClients.Keys)
@@ -131,8 +156,45 @@ public class GameManager : Singleton<GameManager>
             Player player = NetworkManager.Singleton.ConnectedClients[alivePlayerId].PlayerObject.GetComponentInChildren<Player>();
             UIManager.Instance.UpdatePlayerTimersRpc($"<color=#59dac9>{player.Username} <color=#2E2E2E>has won the round!"); // Update Message
 
+            if (roundWins.ContainsKey(alivePlayerId))
+                roundWins[alivePlayerId] += 1;
+            else
+                roundWins.Add(alivePlayerId, 1);
+
             SwitchState(states.GameTransitionState());
         }
+    }
+    
+    public void SwitchRandomGamemode()
+    {
+        if (gamemodes.Count > 0)
+        {
+            int index = UnityEngine.Random.Range(0, gamemodes.Count);
+            string mode = gamemodes[index];
+
+            switch (mode)
+            {
+                case "Javelin Throwing":
+                    SwitchState(states.GameJavelinThrowState());
+                    break;
+                case "Assassination":
+                    SwitchState(states.GameAssassinationState());
+                    break;
+                case "Jousting":
+                    SwitchState(states.GameJoustState());
+                    break;
+            }
+
+            gamemodes.RemoveAt(index);
+        }
+        else
+            SwitchState(states.GameSwordFightState());
+    }
+
+    public void ResetGamemodes()
+    {
+        foreach (var mode in savedGamemodes)
+            gamemodes.Add(mode);
     }
 
     void RoundTimerCompleted()
@@ -167,16 +229,36 @@ public class GameManager : Singleton<GameManager>
     {
         if (!IsServer) return;
 
-        foreach (var player in NetworkManager.ConnectedClients.Keys)
+        foreach (var id in NetworkManager.ConnectedClients.Keys)
         {
             float spawn_x = UnityEngine.Random.Range(-3f, 3.25f);
             float spawn_z = UnityEngine.Random.Range(-1.5f, 1.5f);
             Vector3 spawnPos = new Vector3(spawn_x, 0.4f, spawn_z);
 
-            var playerObject = NetworkLobbyManager.Instance.NetworkManager.ConnectedClients[player].PlayerObject;
-            var currentScale = playerObject.transform.localScale;
-            playerObject.GetComponent<NetworkTransform>().Teleport(spawnPos, Quaternion.identity, currentScale);
+            var player = NetworkLobbyManager.Instance.NetworkManager.ConnectedClients[id].PlayerObject;
+            player.GetComponent<NetworkEntity>().TeleportRpc(spawnPos);
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void RepositionPlayersRpc(Vector3 pos)
+    {
+        if (!IsServer) return;
+
+        foreach (var id in NetworkManager.ConnectedClients.Keys)
+        {
+            var player = NetworkLobbyManager.Instance.NetworkManager.ConnectedClients[id].PlayerObject;
+            player.GetComponent<NetworkEntity>().TeleportRpc(pos);
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void RepositionPlayerRpc(ulong id, Vector3 pos)
+    {
+        if (!IsServer) return;
+
+        var player = NetworkLobbyManager.Instance.NetworkManager.ConnectedClients[id].PlayerObject;
+        player.GetComponent<NetworkEntity>().TeleportRpc(pos);
     }
 
     [Rpc(SendTo.Server)]
@@ -245,6 +327,11 @@ public class GameManager : Singleton<GameManager>
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
         {
             NetworkManager.Singleton.Shutdown();
+        }
+
+        if (!Application.isEditor)
+        {
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
     }
     #endregion

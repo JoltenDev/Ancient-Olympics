@@ -53,7 +53,7 @@ public class NPC : NetworkEntity
         onAnimatorCrossFade -= networkAnimatorSync.AnimateCrossFadeRpc;
     }
 
-    void FixedUpdate()
+    new void FixedUpdate()
     {
         if (!IsServer) return;
 

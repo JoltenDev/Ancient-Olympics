@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2445712677
+  GlobalObjectIdHash: 618784627
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -72,3 +72,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   lobbyMenuPrefab: {fileID: 7179587342603619510, guid: 8ecbf018d552c1f45b703afb5063a377, type: 3}
+  leaveMenuPrefab: {fileID: 2942789787936172556, guid: 649e40ea9d422de4992c288cb8935d40, type: 3}
