@@ -69,7 +69,12 @@ public class UIManager : Singleton<UIManager>
             LobbyMenu?.SetActive(true);  // Set the clone active, not the original one
             DontDestroyOnLoad(LobbyMenu);
 
-            LobbyMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
+            LobbyMenu.GetComponentsInChildren<Button>()[0].onClick.AddListener(delegate
+            {
+                CopyCode();
+            });
+
+            LobbyMenu.GetComponentsInChildren<Button>()[1].onClick.AddListener(delegate
             {
                 if (NetworkManager.Singleton.ConnectedClients.Count < 2) return;
 
@@ -115,4 +120,6 @@ public class UIManager : Singleton<UIManager>
         else
             Hud.GetComponent<HudItems>().pauseMenu.SetActive(false);
     }
+
+    public void CopyCode() => GUIUtility.systemCopyBuffer = NetworkRelay.Instance.Code;
 }

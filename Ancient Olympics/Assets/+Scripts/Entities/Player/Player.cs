@@ -295,9 +295,20 @@ public class Player : NetworkEntity
 
     #region States
     [Rpc(SendTo.Everyone)]
-    public void HitRpc(ulong id, float knockback) => CurrentState?.SwitchState(states?.Hit(id, knockback));
+    public void HitRpc(ulong id, float knockback)
+    {
+        if (!IsOwner || NetworkHealth.Dead.Value) return;
+
+        CurrentState?.SwitchState(states?.Hit(id, knockback));
+    }
+
     [Rpc(SendTo.Everyone)]
-    public void DeathRpc() => CurrentState?.SwitchState(states?.Death());
+    public void DeathRpc()
+    {
+        if (!IsOwner || NetworkHealth.Dead.Value) return;
+
+        CurrentState?.SwitchState(states?.Death());
+    }
     #endregion
 
     #region UI Elements

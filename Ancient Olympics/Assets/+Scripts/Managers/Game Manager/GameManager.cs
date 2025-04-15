@@ -140,8 +140,6 @@ public class GameManager : Singleton<GameManager>
 
         if (DeadPlayers.Count() == NetworkManager.Singleton.ConnectedClients.Count - 1) // If the amount of dead players is equal to the amount of connect clients - 1
         {
-            Debug.Log(deadPlayers.Count());
-
             ulong alivePlayerId = 100;
 
             foreach (var id in NetworkManager.Singleton.ConnectedClients.Keys)
@@ -272,7 +270,13 @@ public class GameManager : Singleton<GameManager>
     }
 
     [Rpc(SendTo.Server)]
-    public void AddPlayerToDeadListRpc(ulong id) => DeadPlayers.Add(id);
+    public void AddPlayerToDeadListRpc(ulong id)
+    {
+        if (!IsServer) return;
+
+        if (!DeadPlayers.Contains(id))
+            DeadPlayers.Add(id);
+    }
 
     [Rpc(SendTo.Server)]
     public void SpawnNpcsRpc(int amount)

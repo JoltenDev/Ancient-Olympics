@@ -1,3 +1,4 @@
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -62,19 +63,36 @@ public class GameJavelinThrowState : GameBaseState
 
         gameStarted = true;
 
-        var client = RandomClient();
-        client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponRpc(client.ClientId, 2);
-        gameManager.SetJavelinWielderRpc(client.ClientId);
+        GiveJavelinToRandomPlayer();
     }
 
     void PlayerDied()
     {
         gameManager.SetJavelinAddendRpc(0);
+        GiveJavelinToRandomPlayer();
+    }
+
+    void GiveJavelinToRandomPlayer()
+    {
+        var allClients = NetworkManager.Singleton.ConnectedClientsList;
+
+        var aliveClients = allClients
+            .Where(c => !c.PlayerObject.GetComponent<NetworkHealth>().Dead.Value)
+            .ToList();
+
+        if (aliveClients.Count == 0)
+            return; // No alive players to assign javelin to
+
+        var randomIndex = Random.Range(0, aliveClients.Count);
+        var client = aliveClients[randomIndex];
+
+        client.PlayerObject.GetComponent<WeaponHandler>().EquipWeaponRpc(client.ClientId, 2);
+        gameManager.SetJavelinWielderRpc(client.ClientId);
     }
 
     NetworkClient RandomClient()
     {
         return NetworkManager.Singleton.ConnectedClients[
-            (ulong) UnityEngine.Random.Range(0, NetworkManager.Singleton.ConnectedClients.Count)];
+            (ulong) Random.Range(0, NetworkManager.Singleton.ConnectedClients.Count)];
     }
 }
